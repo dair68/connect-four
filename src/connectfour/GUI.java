@@ -1,29 +1,28 @@
 package connectfour;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
+import connectfour.Game;
+import connectfour.Button;
 
 class GUI extends JFrame {
-	JLabel message;
 	
+	private JLabel message;
+	private JLabel[][] spaces; 
+		
 	//GUI constructor
-	GUI() {
+	//@param game - the connect four game the window will show
+	public GUI(Game game) {
 		//invoking JFrame constructor to specify window title
 		super("Connect Four");
+		
+		spaces = new JLabel[Game.numRows][Game.numCols];
 		
 		//stops program when user exits frame
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-		//setting icon
-		String imageFileName = "/red_chip.png";
-		Image icon = Toolkit.getDefaultToolkit().getImage(getClass().getResource(imageFileName));   
-		this.setIconImage(icon);
-		
 		//setting up the content pane.
-        setComponents(this.getContentPane());
+        setComponents(this.getContentPane(), game);
 		
 		//sizing frame
 		this.pack();
@@ -34,9 +33,10 @@ class GUI extends JFrame {
 	
 	//takes care of all components in the GUI
 	//@param pane - the GUI's content pane
-	private void setComponents(Container pane) {
+	//@param game - the connect four game the window will show
+	private void setComponents(Container pane, Game game) {
 		//creating section for status messages
-		message = new JLabel("Game started", SwingConstants.CENTER);
+		message = new JLabel("game started", SwingConstants.CENTER);
 		int messageFontSize = 30;
 		Font messageFont = new Font(message.getName(), Font.PLAIN, messageFontSize);
 		message.setFont(messageFont);
@@ -46,27 +46,61 @@ class GUI extends JFrame {
 		gridPane.setLayout(new GridLayout(7, 7));
 		
 		//adding buttons to grid
-		for(int i=0; i<7; i++) {
-			JButton button = new JButton("\u2193");
-			int buttonFontSize = 25;
-			Font buttonFont = new Font(message.getName(), Font.PLAIN, buttonFontSize);
-			button.setFont(buttonFont);
-			Dimension buttonDim = new Dimension(75, 20);
-			button.setPreferredSize(buttonDim);
-			gridPane.add(button);
+		for(int i=0; i<Game.numCols; i++) {
+			Button btn = new Button(i, game);
+			gridPane.add(btn);
 		}
 		
+		
 		//adding spaces to grid
-		for(int i=0; i<42; i++) {
-			JLabel gridSpace = new JLabel();
-			gridSpace.setBorder(BorderFactory.createLineBorder(Color.black));
-			Dimension gridDim = new Dimension(75, 75);
-			gridSpace.setPreferredSize(gridDim);
-			gridPane.add(gridSpace);
+		for(int i=0; i<Game.numRows; i++) {
+			for(int j=0; j<Game.numCols; j++) {
+				JLabel gridSpace = new JLabel();
+				gridSpace.setBorder(BorderFactory.createLineBorder(Color.black));
+				Dimension gridDim = new Dimension(75, 75);
+				gridSpace.setPreferredSize(gridDim);
+				gridPane.add(gridSpace);
+				
+				spaces[i][j] = gridSpace;
+			}
 		}
 		
 		//placing everything together
 		pane.add(message, BorderLayout.PAGE_START);
 		pane.add(gridPane, BorderLayout.CENTER);
+	}
+	
+	
+	//updates GUI to reflect game status
+	//@param game - the connect four game the window will show
+	void update(Game game) {
+		String status = game.isRedTurn() ? "Red player's turn" : "Yellow player's turn";
+		Color textColor = game.isRedTurn() ? Color.red : Color.yellow;
+		message.setText(status);
+		message.setForeground(textColor);
+		
+		//placing pieces in board
+		for(int i=0; i<Game.numRows; i++) {
+			for(int j=0; j<Game.numCols; j++) {
+				char[][] board = game.getBoard();
+				final char piece = board[i][j];
+				
+				JLabel space = spaces[i][j];
+				space.setOpaque(true);
+				
+				//coloring cell
+				switch(piece) {
+				case ' ':
+					space.setBackground(Color.blue);
+					break;
+				case 'x':
+					space.setBackground(Color.red);
+					break;
+				case 'o':
+					space.setBackground(Color.yellow);
+					break;
+				}		
+			}
+		}
 	}
 }
