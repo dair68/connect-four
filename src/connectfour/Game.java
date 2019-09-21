@@ -11,7 +11,6 @@ public class Game {
 	
 	//starts the game
 	public void start() {
-		System.out.println("starting game");
 		gameWindow.setVisible(true);
 	}
 }
