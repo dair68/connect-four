@@ -1,10 +1,17 @@
 package connectfour;
 
 public class Game {
+	
+	private GUI gameWindow;
 
-	public static void main(String[] args) {
-		System.out.println("Connect Four game starting");
-		GUI gameWindow = new GUI();
+	//initializes the game
+	public Game() {
+		gameWindow = new GUI();
 	}
-
+	
+	//starts the game
+	public void start() {
+		System.out.println("starting game");
+		gameWindow.setVisible(true);
+	}
 }
