@@ -15,6 +15,7 @@ class GUI extends JFrame {
 	public GUI(Game game) {
 		//invoking JFrame constructor to specify window title
 		super("Connect Four");
+		this.getContentPane().setBackground(Color.lightGray);
 		
 		spaces = new JLabel[Game.numRows][Game.numCols];
 		
@@ -56,11 +57,14 @@ class GUI extends JFrame {
 		for(int i=0; i<Game.numRows; i++) {
 			for(int j=0; j<Game.numCols; j++) {
 				JLabel gridSpace = new JLabel();
+				
+				//styling spaces
 				gridSpace.setBorder(BorderFactory.createLineBorder(Color.black));
 				Dimension gridDim = new Dimension(75, 75);
 				gridSpace.setPreferredSize(gridDim);
-				gridPane.add(gridSpace);
 				
+				//adding spaces to GUI
+				gridPane.add(gridSpace);
 				spaces[i][j] = gridSpace;
 			}
 		}
@@ -134,6 +138,14 @@ class GUI extends JFrame {
 					break;
 				case 'o':
 					space.setBackground(Color.yellow);
+					break;
+				case 'X':
+					space.setBackground(Color.red);
+					space.setBorder(BorderFactory.createLineBorder(Color.white));
+					break;
+				case 'O':
+					space.setBackground(Color.yellow);
+					space.setBorder(BorderFactory.createLineBorder(Color.white));
 					break;
 				}		
 			}

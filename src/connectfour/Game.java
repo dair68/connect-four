@@ -4,6 +4,7 @@ import connectfour.GUI;
 
 public class Game {
 	// ' ' = empty, 'x' = red piece, 'o' = yellow piece
+	// 'X' = red connect 4 piece, 'O' = yellow connect 4 piece
 	private char[][] board;
 	static final int numRows = 6;
 	static final int numCols = 7;
@@ -130,6 +131,8 @@ public class Game {
 			for (int j = 0; j < 4; j++) {
 				// found connect four
 				if (horizontalConnectFour(i, j)) {
+					// highlighting connect four on board
+					markHorizontalConnectFour(i, j);
 					return true;
 				}
 			}
@@ -140,6 +143,8 @@ public class Game {
 			for (int j = 0; j < numCols; j++) {
 				// found connect four
 				if (verticalConnectFour(i, j)) {
+					// highlighting connect four on board
+					markVerticalConnectFour(i, j);
 					return true;
 				}
 			}
@@ -150,6 +155,8 @@ public class Game {
 			for (int j = 0; j < 4; j++) {
 				// found connect four
 				if (diagonalConnectFour1(i, j)) {
+					// highlighting connect four on board
+					markDiagonalConnectFour1(i, j);
 					return true;
 				}
 			}
@@ -160,6 +167,8 @@ public class Game {
 			for (int j = numCols - 1; j >= 3; j--) {
 				// found connect four
 				if (diagonalConnectFour2(i, j)) {
+					// highlighting connect four on board
+					markDiagonalConnectFour2(i, j);
 					return true;
 				}
 			}
@@ -180,6 +189,19 @@ public class Game {
 		return connectFour(a, b, c, d);
 	}
 
+	// converts all spots in a horizontal connect four into uppercase
+	// @param row - row of leftmost space in connect four. 0-6.
+	// @param col - col of leftmost space in connect four. 0-7.
+	private void markHorizontalConnectFour(int row, int col) {
+		// converting piece symbol to uppercase
+		char markedPiece = Character.toUpperCase(board[row][col]);
+
+		board[row][col] = markedPiece;
+		board[row][col + 1] = markedPiece;
+		board[row][col + 2] = markedPiece;
+		board[row][col + 3] = markedPiece;
+	}
+
 	// checks for vertical connect four
 	// @param row - row of bottom-most space in col of four. 0-6.
 	// @param col - col of bottom-most space in col of four. 0-7.
@@ -190,6 +212,18 @@ public class Game {
 		char d = board[row - 3][col];
 
 		return connectFour(a, b, c, d);
+	}
+
+	// converts all spots in vertical connect four into uppercase
+	// @param row - row of bottom-most space in col of four. 0-6
+	// @param col - col of bottom-most space in col of four. 0-7
+	private void markVerticalConnectFour(int row, int col) {
+		char markedPiece = Character.toUpperCase(board[row][col]);
+
+		board[row][col] = markedPiece;
+		board[row - 1][col] = markedPiece;
+		board[row - 2][col] = markedPiece;
+		board[row - 3][col] = markedPiece;
 	}
 
 	// checks for diagonal connect four of the type /
@@ -204,6 +238,18 @@ public class Game {
 		return connectFour(a, b, c, d);
 	}
 
+	// converts all spots in a / diagonal into uppercase
+	// @param row - row of bottom-left space in diagonal of four
+	// @param col - col of bottom-left space in diagonal of four
+	private void markDiagonalConnectFour1(int row, int col) {
+		char markedPiece = Character.toUpperCase(board[row][col]);
+
+		board[row][col] = markedPiece;
+		board[row - 1][col + 1] = markedPiece;
+		board[row - 2][col + 2] = markedPiece;
+		board[row - 3][col + 3] = markedPiece;
+	}
+
 	// checks for diagonal connect four of the type \
 	// @param row - row of bottom-right space in diagonal of four
 	// @param col - col of bottom-right space in diagonal of four
@@ -214,6 +260,18 @@ public class Game {
 		char d = board[row - 3][col - 3];
 
 		return connectFour(a, b, c, d);
+	}
+
+	// converts all spaces in \ diagonal into uppercase
+	// @param row - row of bottom-right space in connect four
+	// @param col - col of bottom-right space in connect four
+	private void markDiagonalConnectFour2(int row, int col) {
+		char markedPiece = Character.toUpperCase(board[row][col]);
+
+		board[row][col] = markedPiece;
+		board[row - 1][col - 1] = markedPiece;
+		board[row - 2][col - 2] = markedPiece;
+		board[row - 3][col - 3] = markedPiece;
 	}
 
 	// checks if 4 spaces have the same colored pieces
