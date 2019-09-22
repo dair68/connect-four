@@ -74,12 +74,48 @@ class GUI extends JFrame {
 	//updates GUI to reflect game status
 	//@param game - the connect four game the window will show
 	void update(Game game) {
-		String status = game.isRedTurn() ? "Red player's turn" : "Yellow player's turn";
-		Color textColor = game.isRedTurn() ? Color.red : Color.yellow;
+		//displaying text at top of screen
+		displayMessage(game);
+		
+		//coloring spaces
+		colorCells(game);
+	}
+	
+	//displays status of game at top of window
+	private void displayMessage(Game game) {
+		String status = "";
+		Color textColor = Color.black;
+		
+		//game has a winner
+		if(game.isOver()) {
+			String winner = game.getWinner();
+			
+			switch(winner) {
+			case "red":
+				status = "Congratulations! Red player won!";
+				textColor = Color.red;
+				break;
+			case "yellow":
+				status = "Congratulations! Yellow player won!";
+				textColor = Color.yellow;
+				break;
+			case "none":
+				status = "It's a tie!";
+				break;
+			}
+		}
+		else {
+			status = game.isRedTurn() ? "Red player's turn" : "Yellow player's turn";
+			textColor = game.isRedTurn() ? Color.red : Color.yellow;
+		}
+		
 		message.setText(status);
 		message.setForeground(textColor);
-		
-		//placing pieces in board
+	}
+	
+	//colors all the cells the appropriate color
+	private void colorCells(Game game) {
+		//painting cells
 		for(int i=0; i<Game.numRows; i++) {
 			for(int j=0; j<Game.numCols; j++) {
 				char[][] board = game.getBoard();
