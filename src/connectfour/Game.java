@@ -13,7 +13,8 @@ public class Game {
 	private boolean over;
 	private String winner;
 	private GUI window;
-
+	private Window frame;
+	
 	// initializes the game
 	public Game() {
 		board = new char[numRows][numCols];
@@ -29,12 +30,14 @@ public class Game {
 		over = false;
 		winner = "";
 		window = new GUI(this);
+		frame = new Window(this);
 	}
 
 	// starts the game
 	public void start() {
-		window.update(this);
-		window.setVisible(true);
+		//window.update(this);
+		//window.setVisible(true);
+		frame.setVisible(true);
 	}
 
 	// plays a piece within a column, if possible
