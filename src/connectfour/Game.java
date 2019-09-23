@@ -1,7 +1,5 @@
 package connectfour;
 
-import connectfour.GUI;
-
 public class Game {
 	// ' ' = empty, 'x' = red piece, 'o' = yellow piece
 	// 'X' = red connect 4 piece, 'O' = yellow connect 4 piece
@@ -13,7 +11,6 @@ public class Game {
 	private boolean over;
 	private String winner;
 	private GUI window;
-	private Window frame;
 	
 	// initializes the game
 	public Game() {
@@ -30,14 +27,13 @@ public class Game {
 		over = false;
 		winner = "";
 		window = new GUI(this);
-		frame = new Window(this);
 	}
 
 	// starts the game
 	public void start() {
 		//window.update(this);
 		//window.setVisible(true);
-		frame.setVisible(true);
+		window.setVisible(true);
 	}
 
 	// plays a piece within a column, if possible
@@ -106,18 +102,15 @@ public class Game {
 		if (isDraw()) {
 			over = true;
 			winner = "none";
-			window.update(this);
 		}
 		// game has winner
 		else if (hasWinner()) {
 			over = true;
 			winner = redTurn ? "red" : "yellow";
-			window.update(this);
 		}
 		// no winner yet
 		else {
 			redTurn = redTurn ? false : true;
-			window.update(this);
 		}
 	}
 
