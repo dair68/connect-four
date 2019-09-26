@@ -11,128 +11,176 @@ import javax.swing.*;
 import javax.swing.UIManager;
 
 public class GUI extends JFrame implements MouseListener, MouseMotionListener, WindowStateListener {
-	
+
 	private static final Color bgColor;
 	private static final Dimension cellDim;
+	private static final Dimension circleDim;
 	private static final Dimension windowDim;
 	private static final Rectangle boardRect;
-	
+
+	// initializing static variables
 	static {
-		//initializing background color
+		// initializing background color
 		bgColor = new Color(238, 238, 238);
-		
-		//initializing cell dimensions
-		int cellWidth = 50;
-		int cellHeight = cellWidth;
+
+		// initializing cell dimensions
+		final int cellWidth = 50;
+		final int cellHeight = cellWidth;
 		cellDim = new Dimension(cellWidth, cellHeight);
-		
-		//initializing window dimensions
-		int scale = 175;
-		int width = 4 * scale;
-		int height = 3 * scale;
+
+		// initializing chip dimensions
+		final int circleWidth = cellWidth * 4 / 5;
+		final int circleHeight = cellWidth * 4 / 5;
+		circleDim = new Dimension(circleWidth, circleHeight);
+
+		// initializing window dimensions
+		final int scale = 175;
+		final int width = 4 * scale;
+		final int height = 3 * scale;
 		windowDim = new Dimension(width, height);
 
-		//initializing board dimensions
-		int rectWidth = cellDim.width * 7;
-		int rectHeight = cellDim.height * 6;
-		int rectX = (width - rectWidth) / 2;
-		int rectY = (height - rectHeight) * 3 / 4;
-		boardRect = new Rectangle(rectX, rectY, rectWidth, rectHeight);
+		// initializing board dimensions
+		final int boardWidth = cellDim.width * 7;
+		final int boardHeight = cellDim.height * 6;
+		final int boardX = (width - boardWidth) / 2;
+		final int boardY = (height - boardHeight) * 3 / 4;
+		boardRect = new Rectangle(boardX, boardY, boardWidth, boardHeight);
 	}
-	
+
 	private Game game;
 	private boolean drawBoard;
 	private int selectedCol;
 
-	GUI(Game game) {
-		//setting up window components
+	// Constructor
+	// @param game - some instance of connectfour.Game
+	public GUI(Game game) {
+		// setting up window components
 		super("Connect Four");
-		
-		//adding action listeners
+
+		// adding action listeners
 		this.addMouseListener(this);
 		this.addMouseMotionListener(this);
 		this.addWindowStateListener(this);
-		
+
 		// stops program when user exits frame
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
-		//sizing frame
+
+		// sizing frame
 		this.setPreferredSize(windowDim);
 		this.setResizable(false);
 		this.pack();
-		
+
 		// placing frame in center of screen
 		this.setLocationRelativeTo(null);
 
-		//initializing instance variables
+		// initializing instance variables
 		this.game = game;
 		drawBoard = true;
 		selectedCol = -1;
 	}
 
+	// starts the window connect four game
+	public void start() {
+		this.setVisible(true);
+	}
+
+	// paints window automatically when paint thread automatically scheduled
+	// @param g - an instance of Graphics class. this method should NOT be called in
+	// code!
 	@Override
 	public void paint(Graphics g) {
 		update(g);
 	}
 
-	// updates GUI based on game progress
+	// updates GUI graphics
+	// @param g - an instance of Graphics class. call repaint() instead of update().
 	@Override
 	public void update(Graphics g) {
-		
-		Graphics2D g2 = (Graphics2D) g;
-		float strokeWidth = (float) 2;
-		g2.setStroke(new BasicStroke(strokeWidth));
-		
-		int rectX = (int) boardRect.getX();
-		int rectY = (int) boardRect.getY();
-		int rectWidth = (int) boardRect.getWidth();
-		int rectHeight = (int) boardRect.getHeight();
 
-		int cellWidth = (int) cellDim.getWidth();
-		int cellHeight = (int) cellDim.getHeight();
+		// setting line width
+		final Graphics2D g2 = (Graphics2D) g;
+		final float lineWidth = 2;
+		g2.setStroke(new BasicStroke(lineWidth));
 
 		// painting board for first time
 		if (drawBoard) {
-			//coloring background
-			g.setColor(bgColor);
-			g.fillRect(0, 0, this.getWidth(), this.getHeight());
-
-			g.setColor(Color.BLUE);
-			g.fillRect(rectX, rectY, rectWidth, rectHeight);
-			g.setColor(Color.BLACK);
-			g.drawRect(rectX, rectY, rectWidth, rectHeight);
-
-		
-
-			// where chips will fall
-//			g.setColor(Color.black);
-//			g.drawRect(rectX, rectY - cellHeight, rectWidth, cellHeight);
-
-			drawBoard = false;
+			drawBackground(g2);
 		}
-		
-		// drawing circles
+
+		// drawing chips on board
+		drawChips(g2);
+		drawChipSilhouette(g2);
+
+		// setting flavor text
+		updateText(g);
+	}
+
+	// draws background of window and board
+	// @param g2 - Graphics2D context. passed in from update()
+	private void drawBackground(Graphics2D g2) {
+
+		// coloring background
+		g2.setColor(bgColor);
+		g2.fillRect(0, 0, this.getWidth(), this.getHeight());
+
+		// drawing board
+		g2.setColor(Color.BLUE);
+		g2.fillRect(boardRect.x, boardRect.y, boardRect.width, boardRect.height);
+
+		// drawing board border
+		g2.setColor(Color.BLACK);
+		g2.drawRect(boardRect.x, boardRect.y, boardRect.width, boardRect.height);
+
+		drawBoard = false;
+	}
+
+	// draws a chip in the window
+	// @param g2 - graphics2D context. passed in from outside function
+	// @param cellCoord - coordinates of upper left corner of bounding cell
+	// @param chipColor - color of the chip
+	// @param borderColor - color of chip border
+	private void drawChip(Graphics2D g2, Point cellCoord, Color chipColor, Color borderColor) {
+
+		// calculating circle parameters
+		final int circleX = cellCoord.x + cellDim.width / 10;
+		final int circleY = cellCoord.y + cellDim.height / 10;
+
+		// drawing chip
+		g2.setColor(chipColor);
+		g2.fillOval(circleX, circleY, circleDim.width, circleDim.height);
+
+		// drawing chip border
+		g2.setColor(borderColor);
+		g2.drawOval(circleX, circleY, circleDim.width, circleDim.height);
+	}
+
+	// draws connect four chips
+	// @param g2 - the graphics context. passed in from update()
+	private void drawChips(Graphics2D g2) {
+
+		// drawing chips
 		for (int i = 0; i < 7; i++) {
 			for (int j = 0; j < 6; j++) {
+				// circles take up middle 80 percent of each square cell
+				final int cellX = boardRect.x + i * cellDim.width;
+				final int cellY = boardRect.y + j * cellDim.height;
 
-				int x = rectX + cellWidth / 10 + i * cellWidth;
-				int y = rectY + cellHeight / 10 + j * cellHeight;
-				int circleWidth = cellWidth * 4 / 5;
-				int circleHeight = cellHeight * 4 / 5;
-//							g.setColor(Color.white);
-//							g.fillOval(x, y, circleWidth, circleHeight);
+				// setting up circle colors
+				final char board[][] = game.getBoard();
+				final char piece = board[j][i];
 
-				// painting circle appropriate color
-				char board[][] = game.getBoard();
-				char piece = board[j][i];
-				Color chipColor = Color.black;
-				Color borderColor = Color.black;
-				float borderWidth = strokeWidth;
-				float thickBorderWidth = 3;
+				Color chipColor;
+				Color borderColor;
+				float borderWidth;
+				final float thinBorderWidth = 2;
+				final float thickBorderWidth = 3;
 
+				// determining colors based on player turn and wins
 				switch (piece) {
 				case 'x':
 					chipColor = Color.red;
+					borderColor = Color.black;
+					borderWidth = thinBorderWidth;
 					break;
 				case 'X':
 					chipColor = Color.red;
@@ -141,97 +189,119 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 					break;
 				case 'o':
 					chipColor = Color.yellow;
+					borderColor = Color.black;
+					borderWidth = thinBorderWidth;
 					break;
 				case 'O':
 					chipColor = Color.yellow;
 					borderColor = Color.orange;
 					borderWidth = thickBorderWidth;
 					break;
-				case ' ':
+				default:
 					chipColor = bgColor;
+					borderColor = Color.black;
+					borderWidth = thinBorderWidth;
 					break;
 				}
-				
-				g.setColor(chipColor);
-				g.fillOval(x, y, circleWidth, circleHeight);
-				
+
+				// drawing chip
 				g2.setStroke(new BasicStroke(borderWidth));
-				g.setColor(borderColor);
-				g.drawOval(x, y, circleWidth, circleHeight);
+				drawChip(g2, new Point(cellX, cellY), chipColor, borderColor);
 			}
 
 		}
-
-		// drawing chip shilloute over selected column
-		for (int i = 0; i < 7; i++) {
-			//drawing shilloute over selected column
-			if(selectedCol == i) {
-				int circleX = rectX + cellWidth / 10 + i * cellWidth;
-				int circleY = rectY + cellHeight / 10 - cellHeight;
-				int circleWidth = cellWidth * 4 / 5;
-				int circleHeight = cellHeight * 4 / 5;
-				
-				Color chipColor = game.isRedTurn() ? Color.red : Color.yellow;
-
-				g.setColor(chipColor);
-				g.fillOval(circleX, circleY, circleWidth, circleHeight);
-
-				g.setColor(Color.black);
-				g.drawOval(circleX, circleY, circleWidth, circleHeight);
-			}
-			//erasing top of column
-			else {
-				//erasing tops of all columns
-				int x = rectX + i * cellWidth;
-				int y = rectY - cellHeight;
-				
-				g.setColor(bgColor);
-				g.fillRect(x, y, cellWidth, cellHeight);
-			}
-			
-		}
-		
-		updateText(g);
 	}
 
-	//updates status text in window
-	//g - the graphics context
+	// draws floating chip silhouette
+	// @param g2 - Graphics2d context. passed in from update().
+	private void drawChipSilhouette(Graphics2D g2) {
+		//
+		final int hoverRectX = boardRect.x;
+		final int hoverRectY = boardRect.y - cellDim.height;
+		final int hoverRectWidth = boardRect.width;
+		final int hoverRectHeight = cellDim.height;
+
+		// erasing tops of columns
+		g2.setColor(bgColor);
+		g2.fillRect(hoverRectX, hoverRectY, hoverRectWidth, hoverRectHeight);
+
+		// drawing chip silhouette
+		if (!game.isOver()) {
+			// searching for selected column
+			for (int i = 0; i < 7; i++) {
+				// found the selected column
+				if (i == selectedCol) {
+					// finding chip location
+					final int cellX = hoverRectX + i * cellDim.width;
+					final int cellY = hoverRectY;
+
+					// determining chip color
+					Color chipColor = game.isRedTurn() ? Color.red : Color.yellow;
+
+					// drawing chip
+					drawChip(g2, new Point(cellX, cellY), chipColor, Color.black);
+
+					break;
+				}
+			}
+		}
+	}
+
+	// updates status text in window
+	// g - the graphics context. passed in from update().
 	private void updateText(Graphics g) {
-		g.setColor(Color.black);
 		
-		int textX = (int) (this.getWidth()*.2);
-		int textY = boardRect.y - cellDim.height * 2;
-		int textWidth = (int) (this.getWidth()*.6);
-		int textHeight =  (int) (cellDim.height);
+		//finding dimensions of text area
+		final int wideRectWidth = this.getWidth() * 3/4;
+		final int smallRectWidth = this.getWidth() * 3/5;
 		
+		final int textRectWidth = game.isOver() ? wideRectWidth : smallRectWidth;
+		final int textRectHeight = cellDim.height;
+		final int textRectX = (this.getWidth() - textRectWidth) / 2;
+		final int textRectY = boardRect.y - cellDim.height * 2;
 		
-		//clearing text area
-		//g.setColor(bgColor);
-		//g.setColor(Color.LIGHT_GRAY);
+		// coloring text area
 		Color messageBG = game.isRedTurn() ? Color.red : Color.yellow;
 		g.setColor(messageBG);
-		g.fillRect(textX, textY, textWidth, textHeight);
-		
+		g.fillRect(textRectX, textRectY, textRectWidth, textRectHeight);
+
+		// outlining border
 		g.setColor(Color.black);
-		g.drawRect(textX, textY, textWidth, textHeight);
-		
-		Font font = new Font("Comic Sans MS", Font.PLAIN, 20);
+		g.drawRect(textRectX, textRectY, textRectWidth, textRectHeight);
+
+		// selecting font
+		int fontSize = 25;
+		Font font = new Font("Comic Sans MS", Font.PLAIN, fontSize);
 		g.setFont(font);
+
+		// determining message to display
+		Color fontColor; 
+		String message;
 		
-		//Color fontColor = game.isRedTurn() ? Color.red : Color.yellow;
-		Color fontColor = Color.black;
+		//game ended in a tie
+		if(game.getWinner() == "none") {
+			fontColor = Color.black;
+			message = "Game over. It's a tie!";
+		}
+		//game not in tie state
+		else {
+			fontColor = game.isRedTurn() ? Color.white : Color.black;
+			
+			String player = game.isRedTurn() ? "Red player" : "Yellow player";
+			String turnMessage = player + "'s turn";
+			String winMessage = "Congratulations! " + player + " is the winner!";
+			
+			message = game.isOver() ? winMessage : turnMessage;
+		}
+		
+		//writing message
 		g.setColor(fontColor);
 		
-		//determining message to display
-		String player = game.isRedTurn() ? "Red player" : "Yellow player";
-		String winningText = "Congratulations! " + player + " is the winner!";
-		String turnText = player + "'s turn";
-		String message = game.isOver() ? winningText : turnText;
-		
-		
-		g.drawString(message, textX, (int) (textY+textHeight*.8));
+		final int textX = textRectX + 5;
+		final int textY = textRectY + textRectHeight * 4 / 5;		
+		g.drawString(message, textX, textY);
 	}
-	
+
 	// mouse key pressed down
 	@Override
 	public void mousePressed(MouseEvent e) {
@@ -248,9 +318,9 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		System.out.println("Mouse clicked (" + e.getX() + ", " + e.getY() + ")");
-		
-		//user clicked on a column
-		if(selectedCol != -1) {
+
+		// user clicked on a column
+		if (selectedCol != -1) {
 			game.playPiece(selectedCol);
 			this.repaint();
 		}
@@ -279,7 +349,7 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 
 		int leftEdge = (int) boardRect.getX();
 		int rightEdge = leftEdge + (int) boardRect.getWidth();
-		
+
 		int prevSelectedCol = selectedCol;
 
 		// checking if mouse in a column
@@ -290,9 +360,9 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 		else {
 			selectedCol = -1;
 		}
-		
-		//repainting if selected column has changed
-		if(prevSelectedCol != selectedCol) {
+
+		// repainting if selected column has changed
+		if (prevSelectedCol != selectedCol) {
 			this.repaint();
 		}
 	}
@@ -302,7 +372,7 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 	public void mouseDragged(MouseEvent e) {
 		System.out.println("Mouse dragged");
 	}
-	
+
 	@Override
 	public void windowStateChanged(WindowEvent e) {
 		drawBoard = true;

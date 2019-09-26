@@ -10,7 +10,6 @@ public class Game {
 	private boolean redTurn;
 	private boolean over;
 	private String winner;
-	private GUI window;
 	
 	// initializes the game
 	public Game() {
@@ -26,14 +25,6 @@ public class Game {
 		redTurn = false;
 		over = false;
 		winner = "";
-		window = new GUI(this);
-	}
-
-	// starts the game
-	public void start() {
-		//window.update(this);
-		//window.setVisible(true);
-		window.setVisible(true);
 	}
 
 	// plays a piece within a column, if possible
