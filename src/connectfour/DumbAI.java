@@ -7,7 +7,7 @@ public class DumbAI extends AI {
 	//randomly determines which column to play
 	//returns column from 0-6.
 	@Override
-	int determineMove(final Game game) {
+	int determineMove(Game game) {
 		ArrayList<Integer> openColumns = new ArrayList<Integer>();
 		
 		//looping through board columns to find vacancies

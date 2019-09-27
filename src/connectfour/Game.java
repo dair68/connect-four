@@ -33,10 +33,33 @@ public class Game {
 		winner = "";
 		input = new Scanner(System.in);
 	}
+	
+	//copy constructor
+	Game(Game game) {
+		board = new char[numRows][numCols];
+		
+		//copying board over
+		for(int i=0; i<numRows; i++) {
+			for(int j=0; j<numCols; j++) {
+				char[][] originalBoard = game.getBoard();
+				board[i][j] = originalBoard[i][j];
+			}
+		}
+		
+		redTurn = game.isRedTurn();
+		over = game.isOver();
+		winner = game.getWinner();
+		input = game.getScanner();
+	}
+	
+	//retrieves the game's input stream
+	Scanner getScanner() {
+		return input;
+	}
 
 	// plays a piece within a column, if possible
 	// @param col - column to place piece. number from 0-6.
-	void playPiece(final int col) {
+	void playPiece(int col) {
 		// col is currently playable
 		if (isPlayable(col) && !over) {
 			// finding vacancy
@@ -59,7 +82,7 @@ public class Game {
 	// checks to see if col is playable
 	// @param col - chosen col
 	// returns true if col is from 0-6 AND has a vacancy, false otherwise
-	boolean isPlayable(final int col) {
+	boolean isPlayable(int col) {
 		// checking if column is a valid number and has a vacancy
 		return (0 <= col && col < numCols && board[0][col] == ' ');
 	}
@@ -174,7 +197,7 @@ public class Game {
 	// checks for horizontal connect four
 	// @param row - row of leftmost space in the row of four. 0-6.
 	// @param col - col of leftmost space in the row of four. 0-7.
-	private boolean horizontalConnectFour(final int row, final int col) {
+	private boolean horizontalConnectFour(int row, int col) {
 		final char a = board[row][col];
 		final char b = board[row][col + 1];
 		final char c = board[row][col + 2];
@@ -186,7 +209,7 @@ public class Game {
 	// converts all spots in a horizontal connect four into uppercase
 	// @param row - row of leftmost space in connect four. 0-6.
 	// @param col - col of leftmost space in connect four. 0-7.
-	private void markHorizontalConnectFour(final int row, final int col) {
+	private void markHorizontalConnectFour(int row, int col) {
 		// converting piece symbol to uppercase
 		final char markedPiece = Character.toUpperCase(board[row][col]);
 
@@ -199,7 +222,7 @@ public class Game {
 	// checks for vertical connect four
 	// @param row - row of top-most space in col of four. 0-6.
 	// @param col - col of top-most space in col of four. 0-7.
-	private boolean verticalConnectFour(final int row, final int col) {
+	private boolean verticalConnectFour(int row, int col) {
 		final char a = board[row][col];
 		final char b = board[row + 1][col];
 		final char c = board[row + 2][col];
@@ -211,7 +234,7 @@ public class Game {
 	// converts all spots in vertical connect four into uppercase
 	// @param row - row of top-most space in col of four. 0-6
 	// @param col - col of top-most space in col of four. 0-7
-	private void markVerticalConnectFour(final int row, final int col) {
+	private void markVerticalConnectFour(int row, int col) {
 		final char markedPiece = Character.toUpperCase(board[row][col]);
 
 		board[row][col] = markedPiece;
@@ -223,7 +246,7 @@ public class Game {
 	// checks for diagonal connect four of the type /
 	// @param row - row of top-right space in diagonal of four
 	// @param col - col of top-right space in diagonal of four
-	private boolean diagonalConnectFour1(final int row, final int col) {
+	private boolean diagonalConnectFour1(int row, int col) {
 		final char a = board[row][col];
 		final char b = board[row + 1][col - 1];
 		final char c = board[row + 2][col - 2];
@@ -235,7 +258,7 @@ public class Game {
 	// converts all spots in a / diagonal into uppercase
 	// @param row - row of bottom-left space in diagonal of four
 	// @param col - col of bottom-left space in diagonal of four
-	private void markDiagonalConnectFour1(final int row, final int col) {
+	private void markDiagonalConnectFour1(int row, int col) {
 		final char markedPiece = Character.toUpperCase(board[row][col]);
 
 		board[row][col] = markedPiece;
@@ -247,7 +270,7 @@ public class Game {
 	// checks for diagonal connect four of the type \
 	// @param row - row of top-left space in diagonal of four
 	// @param col - col of top-left space in diagonal of four
-	private boolean diagonalConnectFour2(final int row, final int col) {
+	private boolean diagonalConnectFour2(int row, int col) {
 		final char a = board[row][col];
 		final char b = board[row + 1][col + 1];
 		final char c = board[row + 2][col + 2];
@@ -259,7 +282,7 @@ public class Game {
 	// converts all spaces in \ diagonal into uppercase
 	// @param row - row of top-left space in connect four
 	// @param col - col of top-left space in connect four
-	private void markDiagonalConnectFour2(final int row, final int col) {
+	private void markDiagonalConnectFour2(int row, int col) {
 		final char markedPiece = Character.toUpperCase(board[row][col]);
 
 		board[row][col] = markedPiece;
@@ -270,7 +293,7 @@ public class Game {
 
 	// checks if 4 spaces have the same colored pieces
 	// @param a, b, c, d - spaces in the board
-	private boolean connectFour(final char a, final char b, final char c, final char d) {
+	private boolean connectFour(char a, char b, char c, char d) {
 		return (a == b && b == c & c == d && a != ' ');
 	}
 
@@ -376,7 +399,6 @@ public class Game {
 		else {
 			System.out.println("Thanks for playing!");
 			input.close();
-			return;
 		}
 	}
 
@@ -420,7 +442,6 @@ public class Game {
 		else {
 			System.out.println("Thanks for playing!");
 			input.close();
-			return;
 		}
 	}
 
