@@ -81,14 +81,14 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 	// paints window automatically when paint thread automatically scheduled
 	// @param g - an instance of Graphics class
 	@Override
-	public void paint(Graphics g) {
+	public void paint(final Graphics g) {
 		update(g);
 	}
 
 	// updates GUI graphics
 	// @param g - an instance of Graphics class. call repaint() instead of update().
 	@Override
-	public void update(Graphics g) {
+	public void update(final Graphics g) {
 
 		// setting line width
 		final Graphics2D g2 = (Graphics2D) g;
@@ -110,7 +110,7 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 
 	// draws background of window and board
 	// @param g2 - Graphics2D context. passed in from update()
-	private void drawBackground(Graphics2D g2) {
+	private void drawBackground(final Graphics2D g2) {
 
 		// coloring background
 		g2.setColor(bgColor);
@@ -132,7 +132,7 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 	// @param cellCoord - coordinates of upper left corner of bounding cell
 	// @param chipColor - color of the chip
 	// @param borderColor - color of chip border
-	private void drawChip(Graphics2D g2, Point cellCoord, Color chipColor, Color borderColor) {
+	private void drawChip(final Graphics2D g2, final Point cellCoord, final Color chipColor, final Color borderColor) {
 
 		// calculating circle parameters
 		final int circleWidth = cellDim.width * 4 / 5;
@@ -151,7 +151,7 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 
 	// draws connect four chips
 	// @param g2 - the graphics context. passed in from update()
-	private void drawChips(Graphics2D g2) {
+	private void drawChips(final Graphics2D g2) {
 
 		// drawing chips
 		for (int i = 0; i < 7; i++) {
@@ -209,7 +209,7 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 
 	// draws floating chip silhouette
 	// @param g2 - Graphics2d context. passed in from update().
-	private void drawChipSilhouette(Graphics2D g2) {
+	private void drawChipSilhouette(final Graphics2D g2) {
 		//setting dimensions of silhouette area
 		final int hoverRectX = boardRect.x;
 		final int hoverRectY = boardRect.y - cellDim.height;
@@ -243,7 +243,7 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 
 	// updates status text in window
 	// g - the graphics context. passed in from update().
-	private void updateText(Graphics g) {
+	private void updateText(final Graphics g) {
 
 		// finding dimensions of text area
 		final int wideRectWidth = this.getWidth() * 3 / 4;
@@ -302,19 +302,19 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 
 	// prints message to console if mouse key pressed down
 	@Override
-	public void mousePressed(MouseEvent e) {
+	public void mousePressed(final MouseEvent e) {
 		System.out.println("Mouse pressed");
 	}
 
 	// prints message to console if mouse key lifted up
 	@Override
-	public void mouseReleased(MouseEvent e) {
+	public void mouseReleased(final MouseEvent e) {
 		System.out.println("Mouse released");
 	}
 
 	// listens for mouse clicks. plays piece if needed.
 	@Override
-	public void mouseClicked(MouseEvent e) {
+	public void mouseClicked(final MouseEvent e) {
 		System.out.println("Mouse clicked (" + e.getX() + ", " + e.getY() + ")");
 
 		// user clicked on a column
@@ -326,19 +326,19 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 
 	// prints message to console when mouse enters window
 	@Override
-	public void mouseEntered(MouseEvent e) {
+	public void mouseEntered(final MouseEvent e) {
 		System.out.println("Mouse entered");
 	}
 
 	// prints message to console when mouse leaves window
 	@Override
-	public void mouseExited(MouseEvent e) {
+	public void mouseExited(final MouseEvent e) {
 		System.out.println("Mouse exited");
 	}
 
 	// listens for mouse movement. draws chip silhouettes if mouse in certain regions.
 	@Override
-	public void mouseMoved(MouseEvent e) {
+	public void mouseMoved(final MouseEvent e) {
 		System.out.println("Mouse moved to (" + e.getX() + ", " + e.getY() + ")");
 
 		final int x = e.getX();
@@ -365,13 +365,13 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 
 	// outputs message to console everytime mouse is dragged
 	@Override
-	public void mouseDragged(MouseEvent e) {
+	public void mouseDragged(final MouseEvent e) {
 		System.out.println("Mouse dragged");
 	}
 
 	//checks if window state changed and repaints if needed
 	@Override
-	public void windowStateChanged(WindowEvent e) {
+	public void windowStateChanged(final WindowEvent e) {
 		drawBoard = true;
 		this.repaint();
 	}
