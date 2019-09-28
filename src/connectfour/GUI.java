@@ -1,6 +1,8 @@
 package connectfour;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -8,7 +10,8 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowStateListener;
 
 import javax.swing.*;
-import javax.swing.UIManager;
+
+import connectfour.*;
 
 public class GUI extends JFrame implements MouseListener, MouseMotionListener, WindowStateListener {
 
@@ -16,6 +19,7 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 	private static final Dimension cellDim;
 	private static final Dimension windowDim;
 	private static final Rectangle boardRect;
+	private static final Object[] gameOptions;
 
 	// initializing static variables
 	static {
@@ -39,11 +43,15 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 		final int boardX = (width - boardWidth) / 2;
 		final int boardY = (height - boardHeight) * 3 / 4;
 		boardRect = new Rectangle(boardX, boardY, boardWidth, boardHeight);
+
+		gameOptions = new Object[] { "2-player", "Single-player (easy)", "Single-player (normal)" };
 	}
 
 	private Game game;
 	private boolean drawBoard;
 	private int selectedCol;
+	private Object gameMode;
+	private AI ai;
 
 	// Constructor
 	// @param game - some instance of connectfour.Game
@@ -71,6 +79,27 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 		this.addMouseListener(this);
 		this.addMouseMotionListener(this);
 		this.addWindowStateListener(this);
+
+		Object twoPlayer = gameOptions[0];
+		Object dumbAI = gameOptions[1];
+		Object smartAI = gameOptions[2];
+
+		// start dialogue
+		gameMode = JOptionPane.showInputDialog(this, "Select game mode", "Game Select", JOptionPane.DEFAULT_OPTION,
+				null, gameOptions, twoPlayer);
+
+		// assigning dumb ai
+		if (gameMode.equals(dumbAI)) {
+			ai = new DumbAI();
+		}
+		// assigning smart ai
+		else if (gameMode.equals(smartAI)) {
+			ai = new SmartAI();
+		}
+		// no ai needed
+		else {
+			ai = null;
+		}
 	}
 
 	// starts the window connect four game
@@ -210,7 +239,7 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 	// draws floating chip silhouette
 	// @param g2 - Graphics2d context. passed in from update().
 	private void drawChipSilhouette(Graphics2D g2) {
-		//setting dimensions of silhouette area
+		// setting dimensions of silhouette area
 		final int hoverRectX = boardRect.x;
 		final int hoverRectY = boardRect.y - cellDim.height;
 		final int hoverRectWidth = boardRect.width;
@@ -220,8 +249,10 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 		g2.setColor(bgColor);
 		g2.fillRect(hoverRectX, hoverRectY, hoverRectWidth, hoverRectHeight);
 
+		Object twoPlayer = gameOptions[0];
+		
 		// drawing chip silhouette
-		if (!game.isOver()) {
+		if (!game.isOver() && isHumanTurn()) {
 			// searching for selected column
 			for (int i = 0; i < 7; i++) {
 				// found the selected column
@@ -232,13 +263,29 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 
 					// determining chip color
 					Color chipColor = game.isRedTurn() ? Color.red : Color.yellow;
-					
+
 					// drawing chip
 					drawChip(g2, new Point(cellX, cellY), chipColor, Color.black);
 					break;
 				}
 			}
 		}
+	}
+	
+	//checks if it's a human player's turn whether it's 2-player or 1-player
+	private boolean isHumanTurn() {
+		Object twoPlayer = gameOptions[0];
+		
+		//two player game
+		if(gameMode.equals(twoPlayer)) {
+			return true;
+		}
+		//1-player game where it's yellow's turn
+		else if(!game.isRedTurn()) {
+			return true;
+		}
+		
+		return false;
 	}
 
 	// updates status text in window
@@ -255,11 +302,11 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 		final int textRectY = boardRect.y - cellDim.height * 2;
 
 		// coloring text area
-		final Color messageBG; 
+		final Color messageBG;
 		final Color tieBGColor = Color.DARK_GRAY;
 		final Color turnBGColor = game.isRedTurn() ? Color.red : Color.yellow;
 		messageBG = game.isDraw() ? tieBGColor : turnBGColor;
-		
+
 		g.setColor(messageBG);
 		g.fillRect(textRectX, textRectY, textRectWidth, textRectHeight);
 
@@ -317,11 +364,48 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 	public void mouseClicked(MouseEvent e) {
 		System.out.println("Mouse clicked (" + e.getX() + ", " + e.getY() + ")");
 
+		Object twoPlayer = gameOptions[0];
+		Object dumbAI = gameOptions[1];
+		Object smartAI = gameOptions[2];
+
 		// user clicked on a column
 		if (selectedCol != -1) {
-			game.playPiece(selectedCol);
-			this.repaint();
+			// 2 player mode; play piece normally
+			if (gameMode.equals(twoPlayer)) {
+				game.playPiece(selectedCol);
+				this.repaint();
+			}
+			// vs AI. user plays piece then AI plays piece
+			else if (!gameMode.equals(twoPlayer) && !game.isRedTurn()) {
+				// user plays yellow piece
+				game.playPiece(selectedCol);
+				this.repaint();
+
+				// ai plays red piece
+				aiPlayPiece();
+			}
 		}
+	}
+	
+	//lets play a piece for single player game
+	private void aiPlayPiece() {
+		//500 millisecond delay to allow animation time
+		int delay = 500;
+		GUI window = this;
+		
+		//plays a piece after delay
+		ActionListener taskPerformer = new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				// CPU plays red piece
+				final int aiSelectedCol = ai.determineMove(game);
+				game.playPiece(aiSelectedCol);
+				window.repaint();
+			}
+		};
+		
+		Timer timer = new Timer(delay, taskPerformer);
+		timer.setRepeats(false);
+		timer.start();
 	}
 
 	// prints message to console when mouse enters window
@@ -336,30 +420,39 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 		System.out.println("Mouse exited");
 	}
 
-	// listens for mouse movement. draws chip silhouettes if mouse in certain regions.
+	// listens for mouse movement. draws chip silhouettes if mouse in certain
+	// regions.
 	@Override
 	public void mouseMoved(MouseEvent e) {
 		System.out.println("Mouse moved to (" + e.getX() + ", " + e.getY() + ")");
 
-		final int x = e.getX();
+		Object twoPlayer = gameOptions[0];
+		Object dumbAI = gameOptions[1];
+		Object smartAI = gameOptions[2];
 
-		final int leftEdge = boardRect.x;
-		final int rightEdge = leftEdge + boardRect.width;
+		// checking if it's player's turn. (yellow player if vs AI)
+		if (gameMode.equals(twoPlayer) || !game.isRedTurn()) {
 
-		final int prevSelectedCol = selectedCol;
+			// obtaining mouse coordinates
+			final int x = e.getX();
+			final int leftEdge = boardRect.x;
+			final int rightEdge = leftEdge + boardRect.width;
 
-		// checking if mouse in a column
-		if (leftEdge < x && x < rightEdge) {
-			selectedCol = (x - leftEdge) / cellDim.width;
-		}
-		// mouse not in a column
-		else {
-			selectedCol = -1;
-		}
+			final int prevSelectedCol = selectedCol;
 
-		// repainting if selected column has changed
-		if (prevSelectedCol != selectedCol) {
-			this.repaint();
+			// checking if mouse in a column
+			if (leftEdge < x && x < rightEdge) {
+				selectedCol = (x - leftEdge) / cellDim.width;
+			}
+			// mouse not in a column
+			else {
+				selectedCol = -1;
+			}
+
+			// repainting if selected column has changed
+			if (prevSelectedCol != selectedCol) {
+				this.repaint();
+			}
 		}
 	}
 
@@ -369,7 +462,7 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 		System.out.println("Mouse dragged");
 	}
 
-	//checks if window state changed and repaints if needed
+	// checks if window state changed and repaints if needed
 	@Override
 	public void windowStateChanged(WindowEvent e) {
 		drawBoard = true;
