@@ -90,10 +90,12 @@ public class SmartAI extends AI {
 			return viableColumns.get(randomIndex);
 		}
 		//no viable columns; selecting random playable column
-		else {
+		else if(!playableColumns.isEmpty()) {
 			final Random rand = new Random();
 			final int randomIndex = rand.nextInt(playableColumns.size());
 			return playableColumns.get(randomIndex);
 		}
+		
+		return -1;
 	}
 }

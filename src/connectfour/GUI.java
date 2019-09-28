@@ -1,17 +1,8 @@
 package connectfour;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowStateListener;
-
+import java.awt.event.*;
 import javax.swing.*;
-
-import connectfour.*;
 
 public class GUI extends JFrame implements MouseListener, MouseMotionListener, WindowStateListener {
 
@@ -44,12 +35,13 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 		final int boardY = (height - boardHeight) * 3 / 4;
 		boardRect = new Rectangle(boardX, boardY, boardWidth, boardHeight);
 
-		gameOptions = new Object[] { "2-player", "Single-player (easy)", "Single-player (normal)" };
+		gameOptions = new Object[] { "2-player", "1-player (easy)", "1-player (normal)" };
 	}
 
 	private Game game;
 	private boolean drawBoard;
 	private int selectedCol;
+	private int aiSelectedCol;
 	private Object gameMode;
 	private AI ai;
 
@@ -74,12 +66,18 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 		this.game = game;
 		drawBoard = true;
 		selectedCol = -1;
+		aiSelectedCol = -1;
 
 		// adding action listeners
 		this.addMouseListener(this);
 		this.addMouseMotionListener(this);
 		this.addWindowStateListener(this);
+		
+		showGameModeDialog();
+	}
 
+	// asks user for game mode from a dialog
+	private void showGameModeDialog() {
 		Object twoPlayer = gameOptions[0];
 		Object dumbAI = gameOptions[1];
 		Object smartAI = gameOptions[2];
@@ -88,8 +86,13 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 		gameMode = JOptionPane.showInputDialog(this, "Select game mode", "Game Select", JOptionPane.DEFAULT_OPTION,
 				null, gameOptions, twoPlayer);
 
+		// user exited dialogue; application closing
+		if (gameMode == null) {
+			System.out.println("closing application");
+			System.exit(0);
+		}
 		// assigning dumb ai
-		if (gameMode.equals(dumbAI)) {
+		else if (gameMode.equals(dumbAI)) {
 			ai = new DumbAI();
 		}
 		// assigning smart ai
@@ -249,14 +252,26 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 		g2.setColor(bgColor);
 		g2.fillRect(hoverRectX, hoverRectY, hoverRectWidth, hoverRectHeight);
 
-		Object twoPlayer = gameOptions[0];
-		
 		// drawing chip silhouette
-		if (!game.isOver() && isHumanTurn()) {
+		if (!game.isOver()) {
 			// searching for selected column
 			for (int i = 0; i < 7; i++) {
-				// found the selected column
-				if (i == selectedCol) {
+				// found AI's selected column
+				if (i == aiSelectedCol) {
+					// finding chip location
+					final int cellX = hoverRectX + i * cellDim.width;
+					final int cellY = hoverRectY;
+
+					// determining chip color
+					Color chipColor = game.isRedTurn() ? Color.red : Color.yellow;
+
+					// drawing chip
+					drawChip(g2, new Point(cellX, cellY), chipColor, Color.black);
+					aiSelectedCol = -1;
+					break;
+				}
+				// found user's selected column
+				else if (i == selectedCol && aiSelectedCol == -1) {
 					// finding chip location
 					final int cellX = hoverRectX + i * cellDim.width;
 					final int cellY = hoverRectY;
@@ -271,20 +286,20 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 			}
 		}
 	}
-	
-	//checks if it's a human player's turn whether it's 2-player or 1-player
+
+	// checks if it's a human player's turn whether it's 2-player or 1-player
 	private boolean isHumanTurn() {
 		Object twoPlayer = gameOptions[0];
-		
-		//two player game
-		if(gameMode.equals(twoPlayer)) {
+
+		// two player game
+		if (gameMode.equals(twoPlayer)) {
 			return true;
 		}
-		//1-player game where it's yellow's turn
-		else if(!game.isRedTurn()) {
+		// 1-player game where it's yellow's turn
+		else if (!game.isRedTurn()) {
 			return true;
 		}
-		
+
 		return false;
 	}
 
@@ -365,8 +380,6 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 		System.out.println("Mouse clicked (" + e.getX() + ", " + e.getY() + ")");
 
 		Object twoPlayer = gameOptions[0];
-		Object dumbAI = gameOptions[1];
-		Object smartAI = gameOptions[2];
 
 		// user clicked on a column
 		if (selectedCol != -1) {
@@ -374,38 +387,87 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 			if (gameMode.equals(twoPlayer)) {
 				game.playPiece(selectedCol);
 				this.repaint();
+
+				// checking if game over
+				if (game.isOver()) {
+					showGameOverDialogue();
+				}
 			}
 			// vs AI. user plays piece then AI plays piece
-			else if (!gameMode.equals(twoPlayer) && !game.isRedTurn()) {
+			else if (isHumanTurn()) {
 				// user plays yellow piece
 				game.playPiece(selectedCol);
+				aiSelectedCol = ai.determineMove(game);
 				this.repaint();
 
+				// checking if game over
+				if (game.isOver()) {
+					this.showGameOverDialogue();
+				}
+
 				// ai plays red piece
-				aiPlayPiece();
+				aiPlayPiece(aiSelectedCol);
 			}
 		}
 	}
-	
-	//lets play a piece for single player game
-	private void aiPlayPiece() {
-		//500 millisecond delay to allow animation time
+
+	// lets ai play a piece in single player game
+	// @param col - AI's selected column
+	private void aiPlayPiece(int col) {
+		// 500 millisecond delay to allow animation time
 		int delay = 500;
 		GUI window = this;
-		
-		//plays a piece after delay
+
+		// plays a piece after delay
 		ActionListener taskPerformer = new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				// CPU plays red piece
-				final int aiSelectedCol = ai.determineMove(game);
-				game.playPiece(aiSelectedCol);
+				game.playPiece(col);
+				aiSelectedCol = -1;
 				window.repaint();
+
+				// checking if game over
+				if (game.isOver()) {
+					window.showGameOverDialogue();
+				}
 			}
 		};
-		
+
 		Timer timer = new Timer(delay, taskPerformer);
 		timer.setRepeats(false);
 		timer.start();
+	}
+
+	// shows the game over dialogue
+	private void showGameOverDialogue() {
+		// asking player if they'd like to play again
+		final int n = JOptionPane.showConfirmDialog(this, "Game over. Play again?", "Game Over",
+				JOptionPane.YES_NO_OPTION);
+		System.out.println(n);
+
+		final int exit = -1;
+		final int yes = 0;
+		final int no = 1;
+
+		// user selected yes
+		if (n == yes) {
+			reset();
+		}
+		// user selected no or exited out
+		else if (n == no || n == exit) {
+			System.out.println("Thanks for playing!");
+			System.exit(0);
+		}
+	}
+
+	// resets this window's instance variables
+	private void reset() {
+		game.reset();
+		drawBoard = true;
+		selectedCol = -1;
+		aiSelectedCol = -1;
+		
+		showGameModeDialog();
 	}
 
 	// prints message to console when mouse enters window
@@ -427,11 +489,9 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 		System.out.println("Mouse moved to (" + e.getX() + ", " + e.getY() + ")");
 
 		Object twoPlayer = gameOptions[0];
-		Object dumbAI = gameOptions[1];
-		Object smartAI = gameOptions[2];
 
-		// checking if it's player's turn. (yellow player if vs AI)
-		if (gameMode.equals(twoPlayer) || !game.isRedTurn()) {
+		// checking if it's user's turn
+		if (isHumanTurn()) {
 
 			// obtaining mouse coordinates
 			final int x = e.getX();
