@@ -16,7 +16,7 @@ public class SmartAI extends AI {
 			final Game gameCopy = new Game(game);
 			gameCopy.playPiece(k);
 			
-			//checks if this completes a connect four
+			//checks if this completes a connect four or creates draw
 			if(gameCopy.isOver()) {
 				return k;
 			}
@@ -26,10 +26,9 @@ public class SmartAI extends AI {
 		for(int k=0; k<Game.numCols; k++) {
 			//playing move in column other than k of game copy
 			final Game gameCopy = new Game(game);
-			
-			//finding a different playable column
 			int alternateCol = (k + 1)% Game.numCols;
 			
+			//finding a different playable column
 			while(alternateCol != k) {
 				//checking if column playable
 				if(gameCopy.isPlayable(alternateCol)) {

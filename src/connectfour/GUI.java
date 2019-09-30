@@ -4,6 +4,8 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
+import java.util.Arrays;
+
 public class GUI extends JFrame implements MouseListener, MouseMotionListener, WindowStateListener {
 
 	private static final Color bgColor;
@@ -40,6 +42,8 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 
 	private Game game;
 	private boolean drawBoard;
+	private boolean drawChips;
+	private boolean textUpdated;
 	private int selectedCol;
 	private int aiSelectedCol;
 	private Object gameMode;
@@ -65,15 +69,18 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 		// initializing instance variables
 		this.game = game;
 		drawBoard = true;
+		drawChips = true;
+		textUpdated = false;
 		selectedCol = -1;
 		aiSelectedCol = -1;
+		
+		gameMode = null;
+		ai = null;
 
 		// adding action listeners
 		this.addMouseListener(this);
 		this.addMouseMotionListener(this);
 		this.addWindowStateListener(this);
-		
-		showGameModeDialog();
 	}
 
 	// asks user for game mode from a dialog
@@ -99,15 +106,12 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 		else if (gameMode.equals(smartAI)) {
 			ai = new SmartAI();
 		}
-		// no ai needed
-		else {
-			ai = null;
-		}
 	}
 
 	// starts the window connect four game
 	public void start() {
 		this.setVisible(true);
+		this.showGameModeDialog();
 	}
 
 	// paints window automatically when paint thread automatically scheduled
@@ -132,12 +136,19 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 			drawBackground(g2);
 		}
 
-		// drawing chips on board
-		drawChips(g2);
 		drawChipSilhouette(g2);
+		
+		// drawing any newly placed chips on board
+		if(drawChips) {
+			drawChips(g2);
+			drawChips = false;
+		}
 
 		// setting flavor text
-		updateText(g);
+		if(!this.textUpdated) {
+			updateText(g);
+			textUpdated = true;
+		}
 	}
 
 	// draws background of window and board
@@ -156,6 +167,9 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 		g2.setColor(Color.BLACK);
 		g2.drawRect(boardRect.x, boardRect.y, boardRect.width, boardRect.height);
 
+		//drawing chips
+		drawChips(g2);
+		
 		drawBoard = false;
 	}
 
@@ -186,49 +200,46 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 	private void drawChips(Graphics2D g2) {
 
 		// drawing chips
-		for (int i = 0; i < 7; i++) {
-			for (int j = 0; j < 6; j++) {
+		for (int i = 0; i < Game.numRows; i++) {
+			for (int j = 0; j < Game.numCols; j++) {
 				// circles take up middle 80 percent of each square cell
-				final int cellX = boardRect.x + i * cellDim.width;
-				final int cellY = boardRect.y + j * cellDim.height;
+				final int cellX = boardRect.x + j * cellDim.width;
+				final int cellY = boardRect.y + i * cellDim.height;
 
 				// setting up circle colors
 				final char board[][] = game.getBoard();
-				final char piece = board[j][i];
+				final char piece = board[i][j];
 
 				final Color chipColor;
-				final Color borderColor;
-				final float borderWidth;
-				final float thinBorderWidth = 2;
-				final float thickBorderWidth = 3;
 
-				// determining colors based on player turn and wins
+				// determining chip color
 				switch (piece) {
-				case 'x':
+				case '0':
 					chipColor = Color.red;
-					borderColor = Color.black;
-					borderWidth = thinBorderWidth;
-					break;
-				case 'X':
-					chipColor = Color.red;
-					borderColor = Color.white;
-					borderWidth = thickBorderWidth;
-					break;
-				case 'o':
-					chipColor = Color.yellow;
-					borderColor = Color.black;
-					borderWidth = thinBorderWidth;
 					break;
 				case 'O':
 					chipColor = Color.yellow;
-					borderColor = Color.orange;
-					borderWidth = thickBorderWidth;
 					break;
 				default:
 					chipColor = bgColor;
-					borderColor = Color.black;
-					borderWidth = thinBorderWidth;
 					break;
+				}
+				
+				Space chipSpace = new Space(i, j);
+				Space[] connectFour = game.getConnectFour();
+				
+				int borderWidth;
+				Color borderColor;
+				
+				//chip part of connect four
+				if(Arrays.asList(connectFour).contains(chipSpace)) {
+					borderWidth = 3;
+					borderColor = game.isRedTurn() ? Color.white : Color.orange;
+				}
+				//chip not part of connect four
+				else {
+					borderWidth = 2;
+					borderColor = Color.black;
 				}
 
 				// drawing chip
@@ -249,8 +260,9 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 		final int hoverRectHeight = cellDim.height;
 
 		// erasing tops of columns
+		final int offset = 3;
 		g2.setColor(bgColor);
-		g2.fillRect(hoverRectX, hoverRectY, hoverRectWidth, hoverRectHeight);
+		g2.fillRect(hoverRectX, hoverRectY + offset, hoverRectWidth, hoverRectHeight - offset - 1);
 
 		// drawing chip silhouette
 		if (!game.isOver()) {
@@ -386,6 +398,8 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 			// 2 player mode; play piece normally
 			if (gameMode.equals(twoPlayer)) {
 				game.playPiece(selectedCol);
+				drawChips = true;
+				textUpdated = false;
 				this.repaint();
 
 				// checking if game over
@@ -398,6 +412,8 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 				// user plays yellow piece
 				game.playPiece(selectedCol);
 				aiSelectedCol = ai.determineMove(game);
+				drawChips = true;
+				textUpdated = false;
 				this.repaint();
 
 				// checking if game over
@@ -424,6 +440,8 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 				// CPU plays red piece
 				game.playPiece(col);
 				aiSelectedCol = -1;
+				drawChips = true;
+				textUpdated = false;
 				window.repaint();
 
 				// checking if game over
@@ -464,6 +482,8 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 	private void reset() {
 		game.reset();
 		drawBoard = true;
+		drawChips = true;
+		textUpdated = false;
 		selectedCol = -1;
 		aiSelectedCol = -1;
 		
@@ -487,8 +507,6 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 	@Override
 	public void mouseMoved(MouseEvent e) {
 		System.out.println("Mouse moved to (" + e.getX() + ", " + e.getY() + ")");
-
-		Object twoPlayer = gameOptions[0];
 
 		// checking if it's user's turn
 		if (isHumanTurn()) {
@@ -526,6 +544,7 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 	@Override
 	public void windowStateChanged(WindowEvent e) {
 		drawBoard = true;
+		this.textUpdated = false;
 		this.repaint();
 	}
 }

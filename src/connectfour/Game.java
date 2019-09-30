@@ -9,13 +9,12 @@ public class Game {
 	static final int numRows = 6;
 	static final int numCols = 7;
 
-	// ' ' = empty, 'x' = red piece, 'o' = yellow piece
-	// 'X' = red connect 4 piece, 'O' = yellow connect 4 piece
+	// ' ' = empty, '0' = red, 'O' = yellow
 	private final char[][] board;
+	private final Space[] connectFour;
 	private boolean redTurn;
 	private boolean over;
 	private String winner;
-	private final Scanner input;
 
 	// initializes the game
 	public Game() {
@@ -28,33 +27,60 @@ public class Game {
 			}
 		}
 
+		connectFour = new Space[4];
+
 		redTurn = false;
 		over = false;
 		winner = "";
-		input = new Scanner(System.in);
 	}
-	
-	//copy constructor
+
+	// copy constructor
 	Game(Game game) {
 		board = new char[numRows][numCols];
-		
-		//copying board over
-		for(int i=0; i<numRows; i++) {
-			for(int j=0; j<numCols; j++) {
-				char[][] originalBoard = game.getBoard();
-				board[i][j] = originalBoard[i][j];
+
+		// copying over board
+		for (int i = 0; i < numRows; i++) {
+			for (int j = 0; j < numCols; j++) {
+				board[i][j] = game.getBoard()[i][j];
 			}
 		}
-		
+
+		connectFour = new Space[4];
+
+		// copying over connect four
+		for (int k = 0; k < 4; k++) {
+			connectFour[k] = game.getConnectFour()[k];
+		}
+
 		redTurn = game.isRedTurn();
 		over = game.isOver();
 		winner = game.getWinner();
-		input = game.getScanner();
 	}
-	
-	//retrieves the game's input stream
-	Scanner getScanner() {
-		return input;
+
+	// obtains the current game board
+	char[][] getBoard() {
+		return board;
+	}
+
+	// returns array containing game's connect four spaces
+	Space[] getConnectFour() {
+		return connectFour;
+	}
+
+	// checks if it's red turn
+	boolean isRedTurn() {
+		return redTurn;
+	}
+
+	// checks to see if game over
+	boolean isOver() {
+		return over;
+	}
+
+	// obtains the game's winner
+	// returns "red", "yellow", '' (no winner yet), or "none" (draw)
+	String getWinner() {
+		return winner;
 	}
 
 	// plays a piece within a column, if possible
@@ -67,9 +93,7 @@ public class Game {
 				// found the vacancy
 				if (board[i][col] == ' ') {
 					// determining color of piece based on player turn
-					char piece = redTurn ? 'x' : 'o';
-
-					// adding piece to board
+					char piece = redTurn ? '0' : 'O';
 					board[i][col] = piece;
 
 					finishTurn();
@@ -85,23 +109,6 @@ public class Game {
 	boolean isPlayable(int col) {
 		// checking if column is a valid number and has a vacancy
 		return (0 <= col && col < numCols && board[0][col] == ' ');
-	}
-
-	// checks if it's red turn
-	// returns true if it's red turn, false if it's yellow
-	boolean isRedTurn() {
-		return redTurn;
-	}
-
-	// obtains the current game board
-	char[][] getBoard() {
-		return board;
-	}
-
-	// checks to see if game over
-	boolean isOver() {
-		// checking for draw
-		return over;
 	}
 
 	// checks to see if game is a draw
@@ -135,21 +142,16 @@ public class Game {
 		}
 	}
 
-	// obtains the game's winner
-	// returns "red", "yellow", '' (no winner yet), or "none" (draw)
-	String getWinner() {
-		return winner;
-	}
-
 	// checks for a winner
 	private boolean hasWinner() {
 		// checking for horizontal connect fours
 		for (int i = 0; i < numRows; i++) {
 			for (int j = 0; j < 4; j++) {
+				Space[] spaces = this.getFourSpaces(i, j, '-');
+
 				// found connect four
-				if (horizontalConnectFour(i, j)) {
-					// highlighting connect four on board
-					markHorizontalConnectFour(i, j);
+				if (isConnectFour(spaces)) {
+					markConnectFour(spaces);
 					return true;
 				}
 			}
@@ -158,10 +160,11 @@ public class Game {
 		// checking for vertical connect fours
 		for (int i = 0; i <= 2; i++) {
 			for (int j = 0; j < numCols; j++) {
+				Space[] spaces = getFourSpaces(i, j, '|');
+
 				// found connect four
-				if (verticalConnectFour(i, j)) {
-					// highlighting connect four on board
-					markVerticalConnectFour(i, j);
+				if (isConnectFour(spaces)) {
+					markConnectFour(spaces);
 					return true;
 				}
 			}
@@ -170,10 +173,12 @@ public class Game {
 		// checking for diagonal connect fours of type /
 		for (int i = 0; i <= 2; i++) {
 			for (int j = 3; j <= 6; j++) {
+				Space[] spaces = getFourSpaces(i, j, '/');
+
 				// found connect four
-				if (diagonalConnectFour1(i, j)) {
+				if (isConnectFour(spaces)) {
 					// highlighting connect four on board
-					markDiagonalConnectFour1(i, j);
+					markConnectFour(spaces);
 					return true;
 				}
 			}
@@ -182,10 +187,12 @@ public class Game {
 		// checking for diagonal connect fours of type \
 		for (int i = 0; i <= 2; i++) {
 			for (int j = 0; j <= 3; j++) {
+				Space[] spaces = getFourSpaces(i, j, '\\');
+
 				// found connect four
-				if (diagonalConnectFour2(i, j)) {
+				if (isConnectFour(spaces)) {
 					// highlighting connect four on board
-					markDiagonalConnectFour2(i, j);
+					markConnectFour(spaces);
 					return true;
 				}
 			}
@@ -194,114 +201,86 @@ public class Game {
 		return false;
 	}
 
-	// checks for horizontal connect four
-	// @param row - row of leftmost space in the row of four. 0-6.
-	// @param col - col of leftmost space in the row of four. 0-7.
-	private boolean horizontalConnectFour(int row, int col) {
-		final char a = board[row][col];
-		final char b = board[row][col + 1];
-		final char c = board[row][col + 2];
-		final char d = board[row][col + 3];
+	// obtains the spaces for potential connect four
+	// @param row - row of topmost space in connect four (leftmost space for
+	// horizontal)
+	// @param col - col of topmost space in connect four (left most space for
+	// horizontal)
+	// @param direction - character specifying type of connect four. '-', '|', '/',
+	// or '\\'.
+	// returns array of 4 Spaces, each Space being space in potential connect four
+	private Space[] getFourSpaces(int row, int col, char direction) {
+		final Space[] spaces = new Space[4];
 
-		return connectFour(a, b, c, d);
+		// generating space coordinates
+		switch (direction) {
+		case '-':
+			spaces[0] = new Space(row, col);
+			spaces[1] = new Space(row, col + 1);
+			spaces[2] = new Space(row, col + 2);
+			spaces[3] = new Space(row, col + 3);
+			break;
+		case '|':
+			spaces[0] = new Space(row, col);
+			spaces[1] = new Space(row + 1, col);
+			spaces[2] = new Space(row + 2, col);
+			spaces[3] = new Space(row + 3, col);
+			break;
+		case '/':
+			spaces[0] = new Space(row, col);
+			spaces[1] = new Space(row + 1, col - 1);
+			spaces[2] = new Space(row + 2, col - 2);
+			spaces[3] = new Space(row + 3, col - 3);
+			break;
+		case '\\':
+			spaces[0] = new Space(row, col);
+			spaces[1] = new Space(row + 1, col + 1);
+			spaces[2] = new Space(row + 2, col + 2);
+			spaces[3] = new Space(row + 3, col + 3);
+			break;
+		}
+
+		return spaces;
 	}
 
-	// converts all spots in a horizontal connect four into uppercase
-	// @param row - row of leftmost space in connect four. 0-6.
-	// @param col - col of leftmost space in connect four. 0-7.
-	private void markHorizontalConnectFour(int row, int col) {
-		// converting piece symbol to uppercase
-		final char markedPiece = Character.toUpperCase(board[row][col]);
+	// checks if four spaces form a connect four
+	// @param spaces - an array of four Spaces, each a (row, col) of a space
+	// returns true if pieces in spaces form connect four, false otherwise
+	private boolean isConnectFour(Space[] spaces) {
+		final char[] pieces = new char[4];
 
-		board[row][col] = markedPiece;
-		board[row][col + 1] = markedPiece;
-		board[row][col + 2] = markedPiece;
-		board[row][col + 3] = markedPiece;
+		// obtaining pieces from space coordinates
+		for (int i = 0; i < spaces.length; i++) {
+			final Space space = spaces[i];
+			final int row = space.row;
+			final int col = space.col;
+
+			final char piece = board[row][col];
+			pieces[i] = piece;
+		}
+
+		final char a = pieces[0];
+		final char b = pieces[1];
+		final char c = pieces[2];
+		final char d = pieces[3];
+
+		return (a == b && b == c && c == d && a != ' ');
 	}
 
-	// checks for vertical connect four
-	// @param row - row of top-most space in col of four. 0-6.
-	// @param col - col of top-most space in col of four. 0-7.
-	private boolean verticalConnectFour(int row, int col) {
-		final char a = board[row][col];
-		final char b = board[row + 1][col];
-		final char c = board[row + 2][col];
-		final char d = board[row + 3][col];
-
-		return connectFour(a, b, c, d);
-	}
-
-	// converts all spots in vertical connect four into uppercase
-	// @param row - row of top-most space in col of four. 0-6
-	// @param col - col of top-most space in col of four. 0-7
-	private void markVerticalConnectFour(int row, int col) {
-		final char markedPiece = Character.toUpperCase(board[row][col]);
-
-		board[row][col] = markedPiece;
-		board[row + 1][col] = markedPiece;
-		board[row + 2][col] = markedPiece;
-		board[row + 3][col] = markedPiece;
-	}
-
-	// checks for diagonal connect four of the type /
-	// @param row - row of top-right space in diagonal of four
-	// @param col - col of top-right space in diagonal of four
-	private boolean diagonalConnectFour1(int row, int col) {
-		final char a = board[row][col];
-		final char b = board[row + 1][col - 1];
-		final char c = board[row + 2][col - 2];
-		final char d = board[row + 3][col - 3];
-
-		return connectFour(a, b, c, d);
-	}
-
-	// converts all spots in a / diagonal into uppercase
-	// @param row - row of bottom-left space in diagonal of four
-	// @param col - col of bottom-left space in diagonal of four
-	private void markDiagonalConnectFour1(int row, int col) {
-		final char markedPiece = Character.toUpperCase(board[row][col]);
-
-		board[row][col] = markedPiece;
-		board[row + 1][col - 1] = markedPiece;
-		board[row + 2][col - 2] = markedPiece;
-		board[row + 3][col - 3] = markedPiece;
-	}
-
-	// checks for diagonal connect four of the type \
-	// @param row - row of top-left space in diagonal of four
-	// @param col - col of top-left space in diagonal of four
-	private boolean diagonalConnectFour2(int row, int col) {
-		final char a = board[row][col];
-		final char b = board[row + 1][col + 1];
-		final char c = board[row + 2][col + 2];
-		final char d = board[row + 3][col + 3];
-
-		return connectFour(a, b, c, d);
-	}
-
-	// converts all spaces in \ diagonal into uppercase
-	// @param row - row of top-left space in connect four
-	// @param col - col of top-left space in connect four
-	private void markDiagonalConnectFour2(int row, int col) {
-		final char markedPiece = Character.toUpperCase(board[row][col]);
-
-		board[row][col] = markedPiece;
-		board[row + 1][col + 1] = markedPiece;
-		board[row + 2][col + 2] = markedPiece;
-		board[row + 3][col + 3] = markedPiece;
-	}
-
-	// checks if 4 spaces have the same colored pieces
-	// @param a, b, c, d - spaces in the board
-	private boolean connectFour(char a, char b, char c, char d) {
-		return (a == b && b == c & c == d && a != ' ');
+	// records four spaces as a connect four
+	// @param spaces - array of four spaces that form a connect four
+	private void markConnectFour(Space[] spaces) {
+		// storing spaces in Game object
+		for (int i = 0; i < 4; i++) {
+			connectFour[i] = spaces[i];
+		}
 	}
 
 	// prints board to console
 	private void printBoard() {
-		// printing column numbers above board
 		String columnNums = "";
 
+		// printing column numbers above board
 		for (int k = 0; k < numCols; k++) {
 			final String columnLabel = " " + k + " ";
 			columnNums += columnLabel;
@@ -312,11 +291,20 @@ public class Game {
 		// printing board starting with top row
 		for (int i = 0; i < numRows; i++) {
 			String line = "";
-
 			// appending row data to line
 			for (int j = 0; j < numCols; j++) {
-				final String boardSpace = "[" + board[i][j] + "]";
-				line += boardSpace;
+				Space space = new Space(i, j);
+
+				// space part of a connect four
+				if (Arrays.asList(connectFour).contains(space)) {
+					final String boardSpace = "{" + board[i][j] + "}";
+					line += boardSpace;
+				}
+				// space not part of a connect four
+				else {
+					final String boardSpace = "[" + board[i][j] + "]";
+					line += boardSpace;
+				}
 			}
 
 			// printing line to console
@@ -325,8 +313,8 @@ public class Game {
 	}
 
 	// asks user for column input. function ends when valid input received
-	// @param scanner - input stream
-	private String getColumnInput() {
+	// @param input - input stream
+	private String getColumnInput(Scanner input) {
 		// asking user to input a column
 		System.out.println("Input column(0-6): ");
 		final String[] columns = new String[] { "0", "1", "2", "3", "4", "5", "6" };
@@ -342,8 +330,9 @@ public class Game {
 
 	// asks user if they want to play again. function ends when valid input
 	// received.
-	private String getPlayAgainInput() {
-		
+	// @param input - input stream
+	private String getPlayAgainInput(Scanner input) {
+
 		// asking if player wants to go again
 		System.out.println("Play again? (y/n)");
 		String response = "";
@@ -352,10 +341,10 @@ public class Game {
 		while (!response.equals("y") && !response.equals("n")) {
 			response = input.nextLine();
 		}
-		
+
 		return response;
 	}
-	
+
 	// prints the win screen to console
 	private void printWinScreen() {
 		// game over. displaying final messages
@@ -380,15 +369,15 @@ public class Game {
 			printBoard();
 
 			// playing column from user input
-			String selectedCol = getColumnInput();
+			String selectedCol = getColumnInput(input);
 			playPiece(Integer.parseInt(selectedCol));
 		}
 
-		//game over. printing win screen.
+		// game over. printing win screen.
 		printWinScreen();
-		
-		//asking if player wants to play another game
-		String response = getPlayAgainInput();
+
+		// asking if player wants to play another game
+		String response = getPlayAgainInput(input);
 
 		// player wants to play another game
 		if (response.equals("y")) {
@@ -405,7 +394,7 @@ public class Game {
 	// plays console version of game vs AI
 	public void play(AI ai) {
 		final Scanner input = new Scanner(System.in);
-		
+
 		// main game event loop
 		while (!over) {
 			// printing game status
@@ -421,7 +410,7 @@ public class Game {
 			}
 			// yellow player's turn; asking user to input a column
 			else {
-				String selectedCol = getColumnInput();
+				String selectedCol = getColumnInput(input);
 				playPiece(Integer.parseInt(selectedCol));
 			}
 
@@ -431,7 +420,7 @@ public class Game {
 		printWinScreen();
 
 		// asking if player wants to go again
-		String response = getPlayAgainInput();
+		String response = getPlayAgainInput(input);
 
 		// player wants to play another game
 		if (response.equals("y")) {
@@ -452,6 +441,11 @@ public class Game {
 			for (int j = 0; j < numCols; j++) {
 				board[i][j] = ' ';
 			}
+		}
+
+		// resetting connect four
+		for (int k = 0; k < 4; k++) {
+			connectFour[k] = new Space(-1, -1);
 		}
 
 		redTurn = false;
