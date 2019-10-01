@@ -431,7 +431,7 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 				game.playPiece(selectedCol);
 				//drawChips = true;
 				drawNewestChip = true;
-				updateText = false;
+				updateText = true;
 				this.repaint();
 
 				// checking if game over
@@ -447,7 +447,7 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 				aiSelectedCol = ai.determineMove(game);
 				//drawChips = true;
 				drawNewestChip = true;
-				updateText = false;
+				updateText = true;
 				this.repaint();
 
 				// checking if game over
