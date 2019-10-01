@@ -12,6 +12,7 @@ public class Game {
 	// ' ' = empty, '0' = red, 'O' = yellow
 	private final char[][] board;
 	private final Space[] connectFour;
+	private Space lastChipLocation;
 	private boolean redTurn;
 	private boolean over;
 	private String winner;
@@ -28,6 +29,7 @@ public class Game {
 		}
 
 		connectFour = new Space[4];
+		lastChipLocation = new Space(-1,-1);
 
 		redTurn = false;
 		over = false;
@@ -51,7 +53,8 @@ public class Game {
 		for (int k = 0; k < 4; k++) {
 			connectFour[k] = game.getConnectFour()[k];
 		}
-
+	
+		lastChipLocation = new Space(game.getLastChipLocation());
 		redTurn = game.isRedTurn();
 		over = game.isOver();
 		winner = game.getWinner();
@@ -65,6 +68,11 @@ public class Game {
 	// returns array containing game's connect four spaces
 	Space[] getConnectFour() {
 		return connectFour;
+	}
+	
+	//returns space containing most recently played chip
+	Space getLastChipLocation() {
+		return lastChipLocation;
 	}
 
 	// checks if it's red turn
@@ -95,6 +103,7 @@ public class Game {
 					// determining color of piece based on player turn
 					char piece = redTurn ? '0' : 'O';
 					board[i][col] = piece;
+					lastChipLocation = new Space(i, col);
 
 					finishTurn();
 					break;
@@ -277,7 +286,7 @@ public class Game {
 	}
 
 	// prints board to console
-	private void printBoard() {
+	void printBoard() {
 		String columnNums = "";
 
 		// printing column numbers above board
@@ -448,6 +457,9 @@ public class Game {
 			connectFour[k] = new Space(-1, -1);
 		}
 
+		lastChipLocation.row = -1;
+		lastChipLocation.col = -1;
+		
 		redTurn = false;
 		over = false;
 		winner = "";

@@ -42,8 +42,8 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 
 	private Game game;
 	private boolean drawBoard;
-	private boolean drawChips;
-	private boolean textUpdated;
+	private boolean updateText;
+	private boolean drawNewestChip;
 	private int selectedCol;
 	private int aiSelectedCol;
 	private Object gameMode;
@@ -69,8 +69,8 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 		// initializing instance variables
 		this.game = game;
 		drawBoard = true;
-		drawChips = true;
-		textUpdated = false;
+		drawNewestChip = false;
+		updateText = true;
 		selectedCol = -1;
 		aiSelectedCol = -1;
 		
@@ -139,15 +139,46 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 		drawChipSilhouette(g2);
 		
 		// drawing any newly placed chips on board
-		if(drawChips) {
-			drawChips(g2);
-			drawChips = false;
+		if(drawNewestChip) {
+			//drawChips(g2);
+			//drawChips = false;
+			final Space location = game.getLastChipLocation();
+			final int cellCornerX = boardRect.x + location.col * cellDim.width;
+			final int cellCornerY = boardRect.y + location.row * cellDim.height;
+			Point cellCorner = new Point(cellCornerX, cellCornerY);
+			
+			//color of player who just went
+			char[][] board = game.getBoard();
+			char piece = board[location.row][location.col];
+			
+			Color chipColor;
+			
+			switch(piece) {
+			case '0':
+				chipColor = Color.red;
+				break;
+			case 'O':
+				chipColor = Color.yellow;
+				break;
+			default:
+				chipColor = bgColor;
+				break;
+			}
+			
+			this.drawChip(g2, cellCorner, chipColor, Color.black);
+			
+			drawNewestChip = false;
 		}
 
 		// setting flavor text
-		if(!this.textUpdated) {
+		if(updateText) {
 			updateText(g);
-			textUpdated = true;
+			updateText = false;
+		}
+		
+		//drawing chips once more if game over
+		if(game.isOver()) {
+			drawChips(g2);
 		}
 	}
 
@@ -398,12 +429,14 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 			// 2 player mode; play piece normally
 			if (gameMode.equals(twoPlayer)) {
 				game.playPiece(selectedCol);
-				drawChips = true;
-				textUpdated = false;
+				//drawChips = true;
+				drawNewestChip = true;
+				updateText = false;
 				this.repaint();
 
 				// checking if game over
 				if (game.isOver()) {
+					game.printBoard();
 					showGameOverDialogue();
 				}
 			}
@@ -412,12 +445,14 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 				// user plays yellow piece
 				game.playPiece(selectedCol);
 				aiSelectedCol = ai.determineMove(game);
-				drawChips = true;
-				textUpdated = false;
+				//drawChips = true;
+				drawNewestChip = true;
+				updateText = false;
 				this.repaint();
 
 				// checking if game over
 				if (game.isOver()) {
+					game.printBoard();
 					this.showGameOverDialogue();
 				}
 
@@ -440,12 +475,13 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 				// CPU plays red piece
 				game.playPiece(col);
 				aiSelectedCol = -1;
-				drawChips = true;
-				textUpdated = false;
+				drawNewestChip = true;
+				updateText = true;
 				window.repaint();
 
 				// checking if game over
 				if (game.isOver()) {
+					game.printBoard();
 					window.showGameOverDialogue();
 				}
 			}
@@ -482,8 +518,8 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 	private void reset() {
 		game.reset();
 		drawBoard = true;
-		drawChips = true;
-		textUpdated = false;
+		drawNewestChip = false;
+		updateText = true;
 		selectedCol = -1;
 		aiSelectedCol = -1;
 		
@@ -544,7 +580,7 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 	@Override
 	public void windowStateChanged(WindowEvent e) {
 		drawBoard = true;
-		this.textUpdated = false;
+		updateText = true;
 		this.repaint();
 	}
 }

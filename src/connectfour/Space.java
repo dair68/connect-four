@@ -4,16 +4,22 @@ public class Space {
 	public int row;
 	public int col;
 
-	// constructor
-	Space() {
+	public Space() {
 		row = 0;
 		col = 0;
 	}
 
 	// constructor with parameters
-	Space(int row, int col) {
+	//@param row - row where this space occurs
+	//@param col - col where this space occurs
+	public Space(int row, int col) {
 		this.row = row;
 		this.col = col;
+	}
+	
+	public Space(Space space) {
+		this.row = space.row;
+		this.col = space.col;
 	}
 
 	// returns string of the form (row, col)
