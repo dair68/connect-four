@@ -44,6 +44,7 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 	private boolean drawBoard;
 	private boolean updateText;
 	private boolean drawNewestChip;
+	private boolean gameOverDialogShown;
 	private int selectedCol;
 	private int aiSelectedCol;
 	private Object gameMode;
@@ -70,6 +71,7 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 		this.game = game;
 		drawBoard = true;
 		drawNewestChip = false;
+		gameOverDialogShown = false;
 		updateText = true;
 		selectedCol = -1;
 		aiSelectedCol = -1;
@@ -408,24 +410,24 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 	// prints message to console if mouse key pressed down
 	@Override
 	public void mousePressed(MouseEvent e) {
-		System.out.println("Mouse pressed");
+		//System.out.println("Mouse pressed");
 	}
 
 	// prints message to console if mouse key lifted up
 	@Override
 	public void mouseReleased(MouseEvent e) {
-		System.out.println("Mouse released");
+		//System.out.println("Mouse released");
 	}
 
 	// listens for mouse clicks. plays piece if needed.
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		System.out.println("Mouse clicked (" + e.getX() + ", " + e.getY() + ")");
+		//System.out.println("Mouse clicked (" + e.getX() + ", " + e.getY() + ")");
 
 		Object twoPlayer = gameOptions[0];
 
 		// user clicked on a column
-		if (selectedCol != -1) {
+		if (selectedCol != -1 && !gameOverDialogShown) {
 			// 2 player mode; play piece normally
 			if (gameMode.equals(twoPlayer)) {
 				game.playPiece(selectedCol);
@@ -437,12 +439,13 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 				// checking if game over
 				if (game.isOver()) {
 					game.printBoard();
-					showGameOverDialogue();
+					showGameOverDialog();
 				}
 			}
 			// vs AI. user plays piece then AI plays piece
-			else if (isHumanTurn()) {
+			else if (isHumanTurn() && game.isPlayable(selectedCol)) {
 				// user plays yellow piece
+				System.out.println("Human playing col " + selectedCol);
 				game.playPiece(selectedCol);
 				aiSelectedCol = ai.determineMove(game);
 				//drawChips = true;
@@ -453,10 +456,11 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 				// checking if game over
 				if (game.isOver()) {
 					game.printBoard();
-					this.showGameOverDialogue();
+					this.showGameOverDialog();
 				}
 
 				// ai plays red piece
+				System.out.println("AI playing col " + aiSelectedCol);
 				aiPlayPiece(aiSelectedCol);
 			}
 		}
@@ -482,7 +486,7 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 				// checking if game over
 				if (game.isOver()) {
 					game.printBoard();
-					window.showGameOverDialogue();
+					window.showGameOverDialog();
 				}
 			}
 		};
@@ -493,12 +497,14 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 	}
 
 	// shows the game over dialogue
-	private void showGameOverDialogue() {
+	private void showGameOverDialog() {
 		// asking player if they'd like to play again
 		final int n = JOptionPane.showConfirmDialog(this, "Game over. Play again?", "Game Over",
 				JOptionPane.YES_NO_OPTION);
 		System.out.println(n);
 
+		gameOverDialogShown = true;
+		
 		final int exit = -1;
 		final int yes = 0;
 		final int no = 1;
@@ -519,6 +525,7 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 		game.reset();
 		drawBoard = true;
 		drawNewestChip = false;
+		gameOverDialogShown = false;
 		updateText = true;
 		selectedCol = -1;
 		aiSelectedCol = -1;
@@ -529,20 +536,20 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 	// prints message to console when mouse enters window
 	@Override
 	public void mouseEntered(MouseEvent e) {
-		System.out.println("Mouse entered");
+		//System.out.println("Mouse entered");
 	}
 
 	// prints message to console when mouse leaves window
 	@Override
 	public void mouseExited(MouseEvent e) {
-		System.out.println("Mouse exited");
+		//System.out.println("Mouse exited");
 	}
 
 	// listens for mouse movement. draws chip silhouettes if mouse in certain
 	// regions.
 	@Override
 	public void mouseMoved(MouseEvent e) {
-		System.out.println("Mouse moved to (" + e.getX() + ", " + e.getY() + ")");
+		//System.out.println("Mouse moved to (" + e.getX() + ", " + e.getY() + ")");
 
 		// checking if it's user's turn
 		if (isHumanTurn()) {
@@ -573,7 +580,7 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 	// outputs message to console everytime mouse is dragged
 	@Override
 	public void mouseDragged(MouseEvent e) {
-		System.out.println("Mouse dragged");
+		//System.out.println("Mouse dragged");
 	}
 
 	// checks if window state changed and repaints if needed
