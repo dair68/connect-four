@@ -9,7 +9,7 @@ public class Game {
 	static final int numRows = 6;
 	static final int numCols = 7;
 
-	// ' ' = empty, '0' = red, 'O' = yellow
+	// top row is row 0, left column is column 0
 	private final char[][] board;
 	private final Space[] connectFour;
 	private Space lastChipLocation;
@@ -43,15 +43,17 @@ public class Game {
 		// copying over board
 		for (int i = 0; i < numRows; i++) {
 			for (int j = 0; j < numCols; j++) {
-				board[i][j] = game.getBoard()[i][j];
+				final char[][] gameBoard = game.getBoard();
+				board[i][j] = gameBoard[i][j];
 			}
 		}
 
 		connectFour = new Space[4];
 
 		// copying over connect four
-		for (int k = 0; k < 4; k++) {
-			connectFour[k] = game.getConnectFour()[k];
+		for (int k = 0; k < 4; k++) {	
+			final Space[] gameConnectFour = game.getConnectFour();
+			connectFour[k] = gameConnectFour[k];
 		}
 
 		lastChipLocation = new Space(game.getLastChipLocation());
@@ -60,12 +62,12 @@ public class Game {
 		winner = game.getWinner();
 	}
 
-	// obtains the current game board
+	// obtains the current game board. ' ' = empty, '0' = red, 'O' = yellow
 	char[][] getBoard() {
 		return board;
 	}
 
-	// returns array containing game's connect four spaces
+	// returns array containing game's connect four spaces, if connect four exists
 	Space[] getConnectFour() {
 		return connectFour;
 	}
@@ -101,7 +103,7 @@ public class Game {
 				// found the vacancy
 				if (board[i][col] == ' ') {
 					// determining color of piece based on player turn
-					char piece = redTurn ? '0' : 'O';
+					final char piece = redTurn ? '0' : 'O';
 					board[i][col] = piece;
 					lastChipLocation = new Space(i, col);
 
@@ -156,7 +158,7 @@ public class Game {
 		// checking for horizontal connect fours
 		for (int i = 0; i < numRows; i++) {
 			for (int j = 0; j < 4; j++) {
-				Space[] spaces = this.getFourSpaces(i, j, '-');
+				final Space[] spaces = this.getFourSpaces(i, j, '-');
 
 				// found connect four
 				if (isConnectFour(spaces)) {
@@ -169,7 +171,7 @@ public class Game {
 		// checking for vertical connect fours
 		for (int i = 0; i <= 2; i++) {
 			for (int j = 0; j < numCols; j++) {
-				Space[] spaces = getFourSpaces(i, j, '|');
+				final Space[] spaces = getFourSpaces(i, j, '|');
 
 				// found connect four
 				if (isConnectFour(spaces)) {
@@ -182,7 +184,7 @@ public class Game {
 		// checking for diagonal connect fours of type /
 		for (int i = 0; i <= 2; i++) {
 			for (int j = 3; j <= 6; j++) {
-				Space[] spaces = getFourSpaces(i, j, '/');
+				final Space[] spaces = getFourSpaces(i, j, '/');
 
 				// found connect four
 				if (isConnectFour(spaces)) {
@@ -196,7 +198,7 @@ public class Game {
 		// checking for diagonal connect fours of type \
 		for (int i = 0; i <= 2; i++) {
 			for (int j = 0; j <= 3; j++) {
-				Space[] spaces = getFourSpaces(i, j, '\\');
+				final Space[] spaces = getFourSpaces(i, j, '\\');
 
 				// found connect four
 				if (isConnectFour(spaces)) {
@@ -253,7 +255,7 @@ public class Game {
 	}
 
 	// checks if four spaces form a connect four
-	// @param spaces - an array of four Spaces, each a (row, col) of a space
+	// @param spaces - an array of four Spaces of the form (row, col)
 	// returns true if pieces in spaces form connect four, false otherwise
 	private boolean isConnectFour(Space[] spaces) {
 		final char[] pieces = new char[4];
@@ -378,7 +380,7 @@ public class Game {
 			printBoard();
 
 			// playing column from user input
-			String selectedCol = getColumnInput(input);
+			final String selectedCol = getColumnInput(input);
 			playPiece(Integer.parseInt(selectedCol));
 		}
 
@@ -386,7 +388,7 @@ public class Game {
 		printWinScreen();
 
 		// asking if player wants to play another game
-		String response = getPlayAgainInput(input);
+		final String response = getPlayAgainInput(input);
 
 		// player wants to play another game
 		if (response.equals("y")) {
@@ -419,17 +421,16 @@ public class Game {
 			}
 			// yellow player's turn; asking user to input a column
 			else {
-				String selectedCol = getColumnInput(input);
+				final String selectedCol = getColumnInput(input);
 				playPiece(Integer.parseInt(selectedCol));
 			}
-
 		}
 
 		// game over. displaying final messages
 		printWinScreen();
 
 		// asking if player wants to go again
-		String response = getPlayAgainInput(input);
+		final String response = getPlayAgainInput(input);
 
 		// player wants to play another game
 		if (response.equals("y")) {

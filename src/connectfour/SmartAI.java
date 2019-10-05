@@ -57,31 +57,27 @@ public class SmartAI extends AI {
 		}
 
 		// searching for random columns that does not aid opponent
-		ArrayList<Integer> viableColumns = findViableColumns(game);
+		final ArrayList<Integer> viableColumns = findViableColumns(game);
 
 		// viable columns found
 		if (!viableColumns.isEmpty()) {
 			return DumbAI.randomElement(viableColumns);
 		}
 
-		// returning random playable column
-		ArrayList<Integer> playableColumns = findPlayableColumns(game);
-
 		// no viable columns; selecting random playable column
-		if (!playableColumns.isEmpty()) {
-			return DumbAI.randomElement(playableColumns);
-		}
-
-		return -1;
+		final AI dumbAI = new DumbAI();
+		return dumbAI.determineMove(game);
 	}
 
 	// creates arraylist of all columns that do not aid opponent
+	// @param game - instance of connectfour game
+	// returns list of columns that won't allow opponent to win next turn
 	static ArrayList<Integer> findViableColumns(Game game) {
-		ArrayList<Integer> viableColumns = new ArrayList<Integer>();
+		final ArrayList<Integer> viableColumns = new ArrayList<Integer>();
 
 		// searching for viable columns
 		for (int k = 0; k < Game.numCols; k++) {
-			Game gameCopy = new Game(game);
+			final Game gameCopy = new Game(game);
 
 			// checking if column playable in game copy
 			if (gameCopy.isPlayable(k)) {
@@ -103,21 +99,7 @@ public class SmartAI extends AI {
 		return viableColumns;
 	}
 
-	// creates arraylist of all columns with vacancies
-	static ArrayList<Integer> findPlayableColumns(Game game) {
-		ArrayList<Integer> playableColumns = new ArrayList<Integer>();
-
-		// searching for playable columns
-		for (int k = 0; k < Game.numCols; k++) {
-			if (game.isPlayable(k)) {
-				playableColumns.add(k);
-			}
-		}
-
-		return playableColumns;
-	}
-	
-	//returns "SmartAI" string
+	// returns "SmartAI" string
 	@Override
 	public String toString() {
 		return "SmartAI";

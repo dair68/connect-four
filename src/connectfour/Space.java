@@ -17,6 +17,8 @@ public class Space {
 		this.col = col;
 	}
 	
+	//copy constructor
+	//@param space - some space object
 	public Space(Space space) {
 		this.row = space.row;
 		this.col = space.col;
