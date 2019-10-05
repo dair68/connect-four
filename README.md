@@ -1,10 +1,9 @@
 # connect-four
-## Redeeming myself with Java
 
-This project was originally a homework assignment for PIC20A, a class I took at UCLA. For the assignment, I was tasked with making a connect four app with the following features: a command-line version of the game, dumb and smart AI's, and a graphical user interface. Although the first two features came eventually with trial and error, I unfortunately was not able to get the GUI working back then.
+A Java connect four application, featuring a console version of the game, smart and dumb AI's, and a GUI version of the game.
 
-Since school has ended, I have vowed to revisit the connect four assignment to redeem myself. After brushing up on Java and rebuilding the whole thing from scratch, what you see here is a connect four application complete with a command-line game, dumb and smart AI's, and most importantly, a graphical user interface!  
+This project was originally a homework assignment for PIC20A at UCLA. Although I successfully implemented the backend, I was unfortunately not able to get the GUI working at the time. Since school ended, I have brushed up on Java and rebuilt the whole thing from scratch to give you the thing you see now.
 
-It's nice to be able sleep at night. In the future, I hope to add tougher AI, and possibly animations.
+Overall, I am pleased to have redeemed myself for PIC20A. In the future, I hope to add tougher AI and possibly even animations.
 
 Download the game from [this page](https://github.com/dair68/connect-four/releases)
