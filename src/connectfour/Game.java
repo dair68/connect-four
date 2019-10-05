@@ -29,7 +29,7 @@ public class Game {
 		}
 
 		connectFour = new Space[4];
-		lastChipLocation = new Space(-1,-1);
+		lastChipLocation = new Space(-1, -1);
 
 		redTurn = false;
 		over = false;
@@ -53,7 +53,7 @@ public class Game {
 		for (int k = 0; k < 4; k++) {
 			connectFour[k] = game.getConnectFour()[k];
 		}
-	
+
 		lastChipLocation = new Space(game.getLastChipLocation());
 		redTurn = game.isRedTurn();
 		over = game.isOver();
@@ -69,8 +69,8 @@ public class Game {
 	Space[] getConnectFour() {
 		return connectFour;
 	}
-	
-	//returns space containing most recently played chip
+
+	// returns space containing most recently played chip
 	Space getLastChipLocation() {
 		return lastChipLocation;
 	}
@@ -443,6 +443,48 @@ public class Game {
 		}
 	}
 
+	// run console game of ai vs ai
+	// @param cpu1 - AI for first player (yellow)
+	// @param cpu2 - AI for second player (red)
+	public void runAIGame(AI cpu1, AI cpu2) {
+		// main game event loop
+		while (!over) {
+			// printing game status
+			final AI activeAI = redTurn ? cpu2 : cpu1;
+			final String player = activeAI.toString();
+			System.out.println(player + "'s Turn");
+			printBoard();
+
+			// ai making move
+			final int selectedCol = activeAI.determineMove(this);
+			System.out.println(selectedCol);
+			playPiece(selectedCol);
+		}
+
+		// game over. displaying final messages
+		printWinScreen();
+	}
+
+	// runs a game (no console output) of ai vs ai to see which is more effective
+	// @param cpu1 - AI for first player (yellow)
+	// @param cpu2 - AI for second player (red)
+	// returns the AI that wins
+	public AI runAITest(AI cpu1, AI cpu2) {
+		// main game event loop
+		while (!over) {
+			//player 1 red, player 2 yellow
+			final AI activeAI = redTurn ? cpu2 : cpu1;
+
+			// ai making move
+			final int selectedCol = activeAI.determineMove(this);
+			playPiece(selectedCol);
+		}
+
+		// returning winner
+		AI winner = redTurn ? cpu2 : cpu1;
+		return winner;
+	}
+
 	// resets the game parameters
 	public void reset() {
 		// resetting board
@@ -459,7 +501,7 @@ public class Game {
 
 		lastChipLocation.row = -1;
 		lastChipLocation.col = -1;
-		
+
 		redTurn = false;
 		over = false;
 		winner = "";

@@ -100,11 +100,11 @@ public class GUI extends JFrame implements MouseListener, MouseMotionListener, W
 			System.out.println("closing application");
 			System.exit(0);
 		}
-		// assigning dumb ai
+		//assigning dumbAI
 		else if (gameMode.equals(dumbAI)) {
 			ai = new DumbAI();
 		}
-		// assigning smart ai
+		//assigning normalAI
 		else if (gameMode.equals(smartAI)) {
 			ai = new SmartAI();
 		}

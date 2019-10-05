@@ -18,11 +18,21 @@ public class DumbAI extends AI {
 			}
 		}
 		
-		//randomly selecting a playable column
-		final Random rand = new Random();
-		final int numOpenColumns = openColumns.size();
-		final int randomIndex = rand.nextInt(numOpenColumns);
-		
-		return openColumns.get(randomIndex);
+		return randomElement(openColumns);
+	}
+	
+	//selects a random element from an array
+	//@param list - an arraylist
+	// returns a random element. returns null if arraylist empty
+	public static <T> T randomElement(ArrayList<T> list) {
+		Random rand = new Random();
+		final int randomIndex = rand.nextInt(list.size());
+		return list.get(randomIndex);
+	}
+	
+	//returns "DumbAI" string
+	@Override
+	public String toString() {
+		return "DumbAI";
 	}
 }

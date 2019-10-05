@@ -3,8 +3,7 @@ package connectfour;
 import connectfour.AI;
 import connectfour.Game;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Random;
+import connectfour.DumbAI;
 
 public class SmartAI extends AI {
 	// determines best move for the game
@@ -62,9 +61,7 @@ public class SmartAI extends AI {
 
 		// viable columns found
 		if (!viableColumns.isEmpty()) {
-			final Random rand = new Random();
-			final int randomIndex = rand.nextInt(viableColumns.size());
-			return viableColumns.get(randomIndex);
+			return DumbAI.randomElement(viableColumns);
 		}
 
 		// returning random playable column
@@ -72,16 +69,14 @@ public class SmartAI extends AI {
 
 		// no viable columns; selecting random playable column
 		if (!playableColumns.isEmpty()) {
-			final Random rand = new Random();
-			final int randomIndex = rand.nextInt(playableColumns.size());
-			return playableColumns.get(randomIndex);
+			return DumbAI.randomElement(playableColumns);
 		}
 
 		return -1;
 	}
 
 	// creates arraylist of all columns that do not aid opponent
-	private ArrayList<Integer> findViableColumns(Game game) {
+	static ArrayList<Integer> findViableColumns(Game game) {
 		ArrayList<Integer> viableColumns = new ArrayList<Integer>();
 
 		// searching for viable columns
@@ -109,7 +104,7 @@ public class SmartAI extends AI {
 	}
 
 	// creates arraylist of all columns with vacancies
-	private ArrayList<Integer> findPlayableColumns(Game game) {
+	static ArrayList<Integer> findPlayableColumns(Game game) {
 		ArrayList<Integer> playableColumns = new ArrayList<Integer>();
 
 		// searching for playable columns
@@ -120,5 +115,11 @@ public class SmartAI extends AI {
 		}
 
 		return playableColumns;
+	}
+	
+	//returns "SmartAI" string
+	@Override
+	public String toString() {
+		return "SmartAI";
 	}
 }
