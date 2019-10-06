@@ -9,4 +9,6 @@ Overall, I am pleased to have redeemed myself for PIC20A. In the future, I hope 
 Download the game [here](https://github.com/dair68/connect-four/releases)
 
 ![image](https://user-images.githubusercontent.com/36572214/66266164-1c942800-e7d6-11e9-98ec-1c88f6eb508f.png)
+![image](https://user-images.githubusercontent.com/36572214/66266196-7b59a180-e7d6-11e9-92d3-8b419978a460.png)
+
 
