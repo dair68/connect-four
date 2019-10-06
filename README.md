@@ -6,4 +6,4 @@ This project was originally a homework assignment for PIC20A at UCLA. Although I
 
 Overall, I am pleased to have redeemed myself for PIC20A. In the future, I hope to add tougher AI and possibly even animations.
 
-Download the game from [this page](https://github.com/dair68/connect-four/releases)
+Download the game [here](https://github.com/dair68/connect-four/releases)
